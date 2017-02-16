@@ -1,0 +1,3 @@
+# files to avoid checking into git
+*.DS_STORE
+*.pyc
