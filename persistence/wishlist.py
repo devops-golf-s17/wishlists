@@ -17,7 +17,8 @@ class Wishlist(object):
     def __init__(self):
         """
         Creates a singleton Wishlist object that manages all
-        Wishlist resources.
+        Wishlist resources.  The data members are prefixed with "_"
+        so as to be private.
         """
 
         # the collection of wishlists that is contained by the class
@@ -41,9 +42,10 @@ class Wishlist(object):
         new_wishlist['user_id'] = user_id
         new_wishlist['items'] = {}
         # get a nicely formatted, human-readable datetime
-        new_wishlist['created'] = datetime.utcnow().__repr__()
+        new_wishlist['created'] = str(datetime.utcnow())
         new_wishlist['deleted'] = False
         self._index += 1
+        new_wishlist['id'] = self._index
         self._wishlist_resources[self._index] = new_wishlist
 
         return json.dumps(new_wishlist)
@@ -57,7 +59,7 @@ class Wishlist(object):
         """
 
         if wishlist_id in self._wishlist_resources:
-            if not wishlist_id['deleted']:
+            if not self._wishlist_resources[wishlist_id]['deleted']:
                 return True
 
         return False
@@ -77,7 +79,7 @@ class Wishlist(object):
             # cannot delete something that did not exist beforehand
             raise WishlistNotFoundException
 
-    def add_item(wishlist_id, item_data):
+    def add_item(self, wishlist_id, item_data):
         """
         Accepts the id for a wishlist resource, as well
         as data to be used for adding a new item.  It is
@@ -94,7 +96,7 @@ class Wishlist(object):
         item_description = item_data.get('description')
 
         if self._verify_wishlist_exists(wishlist_id):
-            if item_id in self._wishlist_resources[wishlist_id][item_id]:
+            if item_id in self._wishlist_resources[wishlist_id]['items']:
                 # one cannot add an item that already exists
                 # note: although it would not be an issue to merely overwrite the data,
                 # that would not be a proper result of a POST request to add an item
@@ -102,7 +104,7 @@ class Wishlist(object):
             else:
                 # add a new item
                 self._wishlist_resources[wishlist_id]['items'][item_id] = {'description': item_description}
-                return {'id': item_id, 'description': item_description}
+                return json.dumps({'id': item_id, 'description': item_description})
         else:
             raise WishlistNotFoundException
 
@@ -119,7 +121,7 @@ class Wishlist(object):
 
         if self._verify_wishlist_exists(wishlist_id):
             try:
-                del self._wishlist_resources[wishlist_id][item_id]
+                del self._wishlist_resources[wishlist_id]['items'][item_id]
             except KeyError:
                 raise WishlistItemNotFoundException
         else:
@@ -150,7 +152,7 @@ class Wishlist(object):
                     self._wishlist_resources[wishlist_id][key] = kwargs.get(key)
 
             # return the modified resource
-            return self._wishlist_resources[wishlist_id]
+            return json.dumps(self._wishlist_resources[wishlist_id])
         else:
             raise WishlistNotFoundException
 
@@ -178,13 +180,13 @@ class Wishlist(object):
                 for key in kwargs:
                     if key in Wishlist.UPDATABLE_ITEM_FIELDS:
                         # OK to update the item
-                        self._wishlist_resources[wishlist_id][item_id][key] = kwargs.get(key)
+                        self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
             except KeyError:
                 # the item did not exist
                 raise WishlistItemNotFoundException
 
             # return the modified resource
-            return self._wishlist_resources[wishlist_id]
+            return json.dumps(self._wishlist_resources[wishlist_id])
         else:
             raise WishlistNotFoundException
 
@@ -196,7 +198,7 @@ class Wishlist(object):
         :param wishlist_id: <str> the id for the wishlist to be returned
         """
 
-        if self._verify_exists(wishlist_id):
+        if self._verify_wishlist_exists(wishlist_id):
             return json.dumps(self._wishlist_resources[wishlist_id])
         else:
             raise WishlistNotFoundException
