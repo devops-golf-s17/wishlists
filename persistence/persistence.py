@@ -6,9 +6,9 @@ from datetime import datetime
 
 class DatabaseEngine(object):
     """
-    Simple class for a wishlist that uses a dict as its internal
-    store.  Each entry in the dict is another dict that acts as
-    an individual "wishlist resource".
+    Simple class for a persistence layer interface that uses a dict as 
+    its internal store.  Each entry in the dict is another dict that
+    acts as an individual "wishlist resource".
     """
 
     UPDATABLE_WISHLIST_FIELDS = ['user_id', 'name']
@@ -33,7 +33,8 @@ class DatabaseEngine(object):
 
         :param name: <str> the name to be assigned to the new wishlist
         :param user_id: <str> the id of the user who owns the wishlist
-        :return: <dict> the newly created wishlist resource
+
+        :return: <str> the newly created wishlist resource in JSON string form
         """
         new_wishlist = {}
         new_wishlist['name'] = name
@@ -54,6 +55,8 @@ class DatabaseEngine(object):
         been deleted.  Otherwise, returns False.
 
         :param id: <int> the wishlist_id to check
+
+        :return: <bool> whether or not the wishlist exists
         """
 
         if wishlist_id in self._wishlist_resources:
@@ -69,6 +72,7 @@ class DatabaseEngine(object):
         exist prior to passing in the id.
 
         :param wishlist_id: <int> the id of the wishlist whose items should be collected
+
         :return: <list> a list of JSON strings, where each string is an item
         """
 
@@ -101,7 +105,7 @@ class DatabaseEngine(object):
         :param wishlist_id: <int> the id of the wishlist for which to add an item
         :param item_data: <dict> the clean, verified JSON data to be used in making the item
 
-        :return: <dict> the JSON representation of the newly added item resource
+        :return: <str> the JSON string representation of the newly added item resource
         """
 
         item_id = item_data.get('id')
@@ -155,7 +159,7 @@ class DatabaseEngine(object):
         :param wishlist_id: <int> the id of the wishlist to be updated
         :param kwargs: <dict> a variable number of key/value pairs that may contain fields to be updated
 
-        :return: <dict> the modified wishlist resource
+        :return: <str> the modified wishlist resource as a JSON string
         """
         if self._verify_wishlist_exists(wishlist_id):
             for key in kwargs:
@@ -184,7 +188,7 @@ class DatabaseEngine(object):
         :param item_id: <str> the id of the item to be modified
         :param kwargs: <dict> a variable number of key/value pairs that may contain fields to be updated
 
-        :return: <dict> the modified wishlist resource
+        :return: <str> the modified wishlist resource as a JSON string
         """
 
         if self._verify_wishlist_exists(wishlist_id):
@@ -208,6 +212,8 @@ class DatabaseEngine(object):
         an exception if it cannot be found.
 
         :param wishlist_id: <str> the id for the wishlist to be returned
+
+        :return: <str> the JSON string representation of the desired wishlist resource
         """
 
         if self._verify_wishlist_exists(wishlist_id):
@@ -222,6 +228,8 @@ class DatabaseEngine(object):
         be explicitly set by passing in include_deleted=True.
 
         :param include_deleted: <bool> whether or not to include soft-deleted wishlists in the returned list
+
+        :return: <str> the JSON string representation of all wishlists
         """
 
         all_wishlists = []
@@ -242,7 +250,8 @@ class DatabaseEngine(object):
         of all items.
 
         :param wishlist_id: <int|None> an id for a specific wishlist from which to return the list of items
-        :return: <list> a list of lists, where each inner list contains individual JSON strings for each item 
+
+        :return: <list> a JSON string representation of all items in one wishlist or all wishlists
         """
         items_to_retrieve = {}
 
