@@ -5,5 +5,5 @@ Wish lists are collections of desired products saved by customers to their user 
 ## About /labs
 Labs is a space where we can put demos and other experimental stuff.
 To run .py scripts inside of labs, make sure you are in the root directory and then run
-
-    `PYTHONPATH=. python labs/<script>.py`
+    
+    PYTHONPATH=. python labs/<script>.py
