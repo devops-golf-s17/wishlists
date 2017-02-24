@@ -4,21 +4,19 @@ import json
 from datetime import datetime
 
 
-class Wishlist(object):
+class DatabaseEngine(object):
     """
     Simple class for a wishlist that uses a dict as its internal
     store.  Each entry in the dict is another dict that acts as
     an individual "wishlist resource".
     """
 
-    UPDATABLE_WISHLIST_FIELDS = ['name']
+    UPDATABLE_WISHLIST_FIELDS = ['user_id', 'name']
     UPDATABLE_ITEM_FIELDS = ['description']
 
     def __init__(self):
         """
-        Creates a singleton Wishlist object that manages all
-        Wishlist resources.  The data members are prefixed with "_"
-        so as to be private.
+        Initializes the internal store of wishlist resources.
         """
 
         # the collection of wishlists that is contained by the class
@@ -48,7 +46,7 @@ class Wishlist(object):
         new_wishlist['id'] = self._index
         self._wishlist_resources[self._index] = new_wishlist
 
-        return json.dumps(new_wishlist)
+        return json.dumps(new_wishlist, indent=4)
 
     def _verify_wishlist_exists(self, wishlist_id):
         """
@@ -63,6 +61,20 @@ class Wishlist(object):
                 return True
 
         return False
+
+    def _collect_items(self, wishlist_id):
+        """
+        Private method for neatly collecting all items in a wishlist and returning
+        them for use elsewhere.  It is assumed that the wishlist has already been confirmed to
+        exist prior to passing in the id.
+
+        :param wishlist_id: <int> the id of the wishlist whose items should be collected
+        :return: <list> a list of JSON strings, where each string is an item
+        """
+
+        items = self._wishlist_resources[wishlist_id]['items']
+        formatted_items = [{'id': key, 'description': value['description']} for key, value in items.iteritems()]
+        return formatted_items
 
     def delete_wishlist(self, wishlist_id):
         """
@@ -104,7 +116,7 @@ class Wishlist(object):
             else:
                 # add a new item
                 self._wishlist_resources[wishlist_id]['items'][item_id] = {'description': item_description}
-                return json.dumps({'id': item_id, 'description': item_description})
+                return json.dumps({'id': item_id, 'description': item_description}, indent=4)
         else:
             raise WishlistNotFoundException
 
@@ -147,12 +159,12 @@ class Wishlist(object):
         """
         if self._verify_wishlist_exists(wishlist_id):
             for key in kwargs:
-                if key in Wishlist.UPDATABLE_WISHLIST_FIELDS:
+                if key in DatabaseEngine.UPDATABLE_WISHLIST_FIELDS:
                     # OK to update the field
                     self._wishlist_resources[wishlist_id][key] = kwargs.get(key)
 
             # return the modified resource
-            return json.dumps(self._wishlist_resources[wishlist_id])
+            return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
         else:
             raise WishlistNotFoundException
 
@@ -178,7 +190,7 @@ class Wishlist(object):
         if self._verify_wishlist_exists(wishlist_id):
             try:
                 for key in kwargs:
-                    if key in Wishlist.UPDATABLE_ITEM_FIELDS:
+                    if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
                         # OK to update the item
                         self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
             except KeyError:
@@ -186,11 +198,11 @@ class Wishlist(object):
                 raise WishlistItemNotFoundException
 
             # return the modified resource
-            return json.dumps(self._wishlist_resources[wishlist_id])
+            return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
         else:
             raise WishlistNotFoundException
 
-    def retrieve_wishlist_resource(self, wishlist_id):
+    def retrieve_wishlist(self, wishlist_id):
         """
         Given a specific wishlist_id, return the corresponding resource or raise
         an exception if it cannot be found.
@@ -199,11 +211,11 @@ class Wishlist(object):
         """
 
         if self._verify_wishlist_exists(wishlist_id):
-            return json.dumps(self._wishlist_resources[wishlist_id])
+            return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
         else:
             raise WishlistNotFoundException
 
-    def retrieve_all_wishlist_resources(self, include_deleted=False):
+    def retrieve_all_wishlists(self, include_deleted=False):
         """
         Returns a list of all existing wishlist resources.  Note that
         deleted resources are *not* included by default; this flag must
@@ -216,12 +228,34 @@ class Wishlist(object):
 
         if include_deleted:
             # use a list comprehension to easily retrieve the dictionaries and merge them together into a JSON string
-            all_wishlists = [json.dumps({key: contents}) for key, contents in self._wishlist_resources.iteritems()]
+            all_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems()]
         else:
             # filter out those key, contents pairs where contents['deleted'] == True 
-            all_wishlists = [json.dumps({key: contents}) for key, contents in self._wishlist_resources.iteritems() if contents['deleted'] == False]
+            all_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['deleted'] == False]
 
-        return all_wishlists
+        return json.dumps(all_wishlists, indent=4)
+
+    def retrieve_all_items(self, wishlist_id=None):
+        """
+        Collect all items in a given wishlist if an id is provided, else collect all
+        items across all wishlists.  Returns a JSON string containing serializations
+        of all items.
+
+        :param wishlist_id: <int|None> an id for a specific wishlist from which to return the list of items
+        :return: <list> a list of lists, where each inner list contains individual JSON strings for each item 
+        """
+        items_to_retrieve = {}
+
+        if wishlist_id:
+            if self._verify_wishlist_exists(wishlist_id):
+                # collect all items from single wishlist
+                items_to_retrieve[wishlist_id] = self._collect_items(wishlist_id)
+        else:
+            # collect all items from all wishlists
+            for wishlist_key in self._wishlist_resources.keys():
+                items_to_retrieve[wishlist_key] = self._collect_items(wishlist_key)
+
+        return json.dumps(items_to_retrieve, indent=4)
 
 
 class WishlistException(Exception):
