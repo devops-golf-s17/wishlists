@@ -13,13 +13,13 @@ from persistence import db
 # Separately - this is not how to do good unit testing :)
 # This is more like a template for a README
 
-# create a new wishlist
+# create a new wishlist -> POST /wishlists
 print '### CREATE WISHLIST TEST ###'
 response = json.loads(db.create_wishlist('my_wishlist', 'best_user'))
 wishlist_id = response.get('id')
 print 'wishlist_id:{}'.format(wishlist_id)
 
-# add an item
+# add an item -> POST /wishlists/<id>/items
 print '### ADD ITEM TEST ###'
 ITEM = {
     'id': 'abc123',
@@ -28,19 +28,20 @@ ITEM = {
 item_create_response = json.loads(db.add_item(wishlist_id, ITEM))
 item_id = item_create_response.get('id')
 
-# print specific wishlist and see that items has one element
+# print specific wishlist and see that items has one element -> GET /wishlists/<id>
 print db.retrieve_wishlist(wishlist_id)
 
-# remove an item
+# remove an item -> DELETE /wishlists/<id>/items/<id>
 print '### REMOVE ITEM TEST ###'
 db.remove_item(wishlist_id, item_id)
 print 'Success!'
 
-# print all wishlists and verify that items is empty
+# print all wishlists and verify that items is empty -> GET /wishlists
 print '### RETRIEVE ALL WISHLISTS TEST ###'
 print db.retrieve_all_wishlists()
 
 # delete wishlist resource and then verify that no more resources are in the db
+# -> DELETE /wishlists/<id>
 print '### DELETE WISHLIST TEST ###'
 db.delete_wishlist(wishlist_id)
 print db.retrieve_all_wishlists()
@@ -60,14 +61,14 @@ item_create_response_2 = json.loads(db.add_item(wishlist_id_2, ITEM_2))
 item_id_2 = item_create_response_2.get('id')
 print db.retrieve_wishlist(wishlist_id_2)
 
-# let's update the wishlist - imagine a PUT request
+# let's update the wishlist -> PUT /wishlists/<id>
 print '### UPDATE WISHLIST TEST ###'
 UPDATE_REQUEST_BODY = {'user_id': 'jessie'}
 db.update_wishlist(wishlist_id_2, **UPDATE_REQUEST_BODY)
 # we should now see the update
 print db.retrieve_wishlist(wishlist_id_2)
 
-# now let's update an item
+# now let's update an item -> PUT /wishlists/<id>/item/<id>
 print '### UPDATE ITEM IN WISHLIST ###'
 UPDATE_ITEM_REQUEST_BODY = {'description': 'the coolest item ever'}
 db.update_wishlist_item(wishlist_id_2, item_id_2, **UPDATE_ITEM_REQUEST_BODY)
