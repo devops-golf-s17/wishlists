@@ -1,5 +1,8 @@
 import os
+
 from flask import Flask, Response, jsonify, request, json
+
+from persistence import db
 
 # Create Flask application
 app = Flask(__name__)
