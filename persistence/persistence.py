@@ -73,7 +73,7 @@ class DatabaseEngine(object):
 
         :param wishlist_id: <int> the id of the wishlist whose items should be collected
 
-        :return: <list> a list of JSON strings, where each string is an item
+        :return: <list> a list of dict objects
         """
 
         items = self._wishlist_resources[wishlist_id]['items']
@@ -242,6 +242,31 @@ class DatabaseEngine(object):
             all_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['deleted'] == False]
 
         return json.dumps(all_wishlists, indent=4)
+    
+    def retrieve_item(self, wishlist_id, item_id):
+        """
+        Collect a specific item associated with a wishlist.
+
+        :param wishlist_id: <int> the wishlist from which an item will be retrieved
+        :param item_id: <str> the id of the item to be retrieved
+
+        :return: <str> a JSON string representation of the desired item resource
+        """
+        desired_item = None
+
+        if self._verify_wishlist_exists(wishlist_id):
+            all_items = self._collect_items(wishlist_id)
+            for item in all_items:
+                if item.get('id') == item_id:
+                    desired_item = item
+        else:
+            raise WishlistNotFoundException
+        
+        if desired_item:
+            return json.dumps(desired_item, indent=4)
+        
+        else:
+            raise ItemNotFoundException
 
     def retrieve_all_items(self, wishlist_id=None):
         """
@@ -259,6 +284,8 @@ class DatabaseEngine(object):
             if self._verify_wishlist_exists(wishlist_id):
                 # collect all items from single wishlist
                 items_to_retrieve[wishlist_id] = self._collect_items(wishlist_id)
+            else:
+                raise WishlistNotFoundException
         else:
             # collect all items from all wishlists
             for wishlist_key in self._wishlist_resources.keys():
@@ -281,3 +308,11 @@ class WishlistItemNotFoundException(WishlistException):
 
 class WishlistOperationNotPermittedException(WishlistException):
     """ Raised when an operation is deemed to be unacceptable """
+
+
+class ItemException(Exception):
+    """ Generic exception class from which more specific item resource exceptions are derived """
+
+
+class ItemNotFoundException(ItemException):
+    """ Raised when an item cannot be found for a given wishlist """
