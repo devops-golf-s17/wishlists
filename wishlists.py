@@ -3,7 +3,7 @@ import os
 from flask import Flask, Response, jsonify, request, json
 
 from persistence import db
-from persistence.persistence import WishlistNotFoundException, ItemNotFoundException
+from persistence.persistence import WishlistException, ItemException
 
 # Create Flask application
 app = Flask(__name__)
@@ -15,7 +15,7 @@ HTTP_204_NO_CONTENT = 204
 HTTP_400_BAD_REQUEST = 400
 HTTP_404_NOT_FOUND = 404
 HTTP_409_CONFLICT = 409
-
+db.create_wishlist('jesse','test')
 
 @app.route('/')
 def index():
@@ -36,7 +36,7 @@ def item(wishlist_id):
             items = db.retrieve_all_items(wishlist_id)
             return items, HTTP_200_OK
         except WishlistException:
-            return 'Could not find a wishlist with id %s' % wishlist_id, HTTP_404_NOT_FOUND
+            return jsonify(message='Could not find a wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
 
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
@@ -48,10 +48,10 @@ def read_wishlist_item(wishlist_id, item_id):
     try:
         item = db.retrieve_item(wishlist_id, item_id)
         return item, HTTP_200_OK
-    except ItemNotFoundException:
-        return 'Item with id %s could not be found' % item_id, HTTP_404_NOT_FOUND
-    except WishlistNotFoundException:
-        return 'Wishlist with id %d could not be found' % wishlist_id, HTTP_404_NOT_FOUND
+    except ItemException:
+        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
 
 
 if __name__ == '__main__':

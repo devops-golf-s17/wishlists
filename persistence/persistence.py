@@ -284,6 +284,8 @@ class DatabaseEngine(object):
             if self._verify_wishlist_exists(wishlist_id):
                 # collect all items from single wishlist
                 items_to_retrieve[wishlist_id] = self._collect_items(wishlist_id)
+            else:
+                raise WishlistNotFoundException
         else:
             # collect all items from all wishlists
             for wishlist_key in self._wishlist_resources.keys():
