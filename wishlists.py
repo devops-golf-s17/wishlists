@@ -45,19 +45,23 @@ def read_wishlist(wishlist_id):
 
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
-	# if not request.is_json:
-	# 	print "HERE!"
-	# 	make_response(CONTENT_ERR_MSG, HTTP_400_BAD_REQUEST)
 	name = request.json['name']
 	uid = request.json['user_id']
-	print name
-	print uid
 	try:
-		# db.create_wishlist(name,user_id)
 		return db.create_wishlist(name,uid), HTTP_200_OK
-		# return jsonify({'message' :'Wishlist Created successfully'}), 200
 	except WishlistException:
-		return jsonify(message='Cannot create a new wishlist named %s' % data['name']), HTTP_400_BAD_REQUEST
+		return jsonify(message='Cannot create a new wishlist named %s' % name), HTTP_400_BAD_REQUEST
+
+@app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
+def add_item_to_wishlist(wishlist_id):
+	tempDic = {}
+	tempDic['id'] = request.json['id']
+	tempDic['description'] = request.json['description']
+	try:
+		return db.add_item(wishlist_id,tempDic), HTTP_200_OK
+	except WishlistException:
+		return jsonify(message='Cannot add a new item %s' % request.json['id']), HTTP_400_BAD_REQUEST
+
 
 if __name__ == '__main__':
 
