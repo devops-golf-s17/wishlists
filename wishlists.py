@@ -22,7 +22,6 @@ def index():
     return (jsonify(service='wishlists', version='0.1',
             url=wishlist_url), HTTP_200_OK)
 
-
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
 	"""
