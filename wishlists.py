@@ -53,8 +53,9 @@ def add_wishlist():
 	print name
 	print uid
 	try:
-		db.create_wishlist(data['name'],data['user_id'])
-		return jsonify({'message' :'Wishlist Created successfully'}), 200
+		# db.create_wishlist(name,user_id)
+		return db.create_wishlist(name,uid), HTTP_200_OK
+		# return jsonify({'message' :'Wishlist Created successfully'}), 200
 	except WishlistException:
 		return jsonify(message='Cannot create a new wishlist named %s' % data['name']), HTTP_400_BAD_REQUEST
 
