@@ -23,26 +23,6 @@ def index():
             url=wishlist_url), HTTP_200_OK)
 
 
-@app.route('/wishlists', methods=['GET'])
-def wishlists():
-    """
-    The route for accessing all wishlist resources or
-    creating a new wishlist resource via a POST.
-    """
-    return db.retrieve_all_wishlists(), HTTP_200_OK
-
-
-@app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
-def read_wishlist(wishlist_id):
-    """
-    The route for reading wishlists, whether one specifically by id
-    or all wishlists when no id is specified.
-    """
-    try:
-        return db.retrieve_wishlist(wishlist_id), HTTP_200_OK
-    except WishlistException:
-        return jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
-
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
 	"""
