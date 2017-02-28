@@ -139,7 +139,7 @@ class DatabaseEngine(object):
             try:
                 del self._wishlist_resources[wishlist_id]['items'][item_id]
             except KeyError:
-                raise WishlistItemNotFoundException
+                raise ItemNotFoundException
         else:
             # the wishlist does not exist or has been deleted
             raise WishlistNotFoundException
