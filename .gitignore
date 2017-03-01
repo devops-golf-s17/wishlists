@@ -4,3 +4,10 @@
 
 # Do not track Vagrant dotfiles
 .vagrant
+
+#Eclipse related files & folders
+.settings/
+.idea/
+.pydevproject
+.project
+
