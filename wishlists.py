@@ -150,6 +150,29 @@ def remove_wishlist_item(wishlist_id, item_id):
     except WishlistException:
         return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
 
+@app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
+def clear_wishlist(wishlist_id):
+    """
+        The route for clearing a wishlist specified by wishlist_id
+	without deleting the wishlist itself.
+    """
+    
+    try:
+        wl_info = db.retrieve_wishlist(wishlist_id)
+        wl = json.loads(wl_info)
+        items_dict = wl["items"]
+        
+        for key,value in items_dict.iteritems():
+            try:
+                    db.remove_item(wishlist_id, key)
+            except ItemException:
+                message = { 'error' : 'Item %d was not found' % value}
+                return jsonify(message), HTTP_404_NOT_FOUND
+        return db.retrieve_wishlist(wishlist_id), HTTP_200_OK
+    except WishlistException:
+        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+        return jsonify(message), HTTP_404_NOT_FOUND
+
 
 if __name__ == '__main__':
 
