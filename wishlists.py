@@ -134,14 +134,15 @@ def update_wishlist(id):
         return jsonify(message), HTTP_404_NOT_FOUND
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
-def update_wishlist_item(wishlist_id, item_id):
+def update_wishlist_item_by_id(wishlist_id, item_id):
     """
     The route for modifying the description of an item in a specific wishlist.
+    Accepts a str id for the item_id.
     """
 
     try:
         data = request.get_json()
-        return db.update_wishlist_item(wishlist_id, item_id, **data ), HTTP_200_OK
+        return db.update_wishlist_item(wishlist_id, item_id=item_id, **data ), HTTP_200_OK
     except WishlistException:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
         return jsonify(message), HTTP_404_NOT_FOUND
@@ -149,21 +150,52 @@ def update_wishlist_item(wishlist_id, item_id):
         message = { 'error' : 'Item %s was not found' % item_id }
         return jsonify(message), HTTP_404_NOT_FOUND
 
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['PUT'])
+def update_wishlist_item_by_index(wishlist_id, item_index):
+    """
+    The route for modifying the description of an item in a specific wishlist.
+    Accepts an int for the item's index.
+    """
+
+    try:
+        data = request.get_json()
+        return db.update_wishlist_item(wishlist_id, item_index=item_index, **data ), HTTP_200_OK
+    except WishlistException:
+        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+        return jsonify(message), HTTP_404_NOT_FOUND
+    except ItemException:
+        message = { 'error' : 'Item with index %s was not found' % item_index }
+        return jsonify(message), HTTP_404_NOT_FOUND
+
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
-def remove_wishlist_item(wishlist_id, item_id):
+def remove_wishlist_item_by_id(wishlist_id, item_id):
     """
     The route for removing a specific item in a wishlist,
     given a wishlist_id and the item_id
     """
     
     try:
-        db.remove_item(wishlist_id, item_id)
+        db.remove_item(wishlist_id, item_id=item_id)
         return '', HTTP_204_NO_CONTENT
     except ItemException:
         return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
     except WishlistException:
         return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
 
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['DELETE'])
+def remove_wishlist_item_by_index(wishlist_id, item_index):
+    """
+    The route for removing a specific item in a wishlist,
+    given a wishlist_id and the item_id
+    """
+    
+    try:
+        db.remove_item(wishlist_id, item_index=item_index)
+        return '', HTTP_204_NO_CONTENT
+    except ItemException:
+        return jsonify(message='Item with id %s could not be found' % item_index), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
 
 if __name__ == '__main__':
 
