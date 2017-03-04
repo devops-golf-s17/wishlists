@@ -199,7 +199,7 @@ class DatabaseEngine(object):
                         self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
             except KeyError:
                 # the item did not exist
-                raise WishlistItemNotFoundException
+                raise ItemNotFoundException
 
             # return the modified resource
             return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
@@ -300,10 +300,6 @@ class WishlistException(Exception):
 
 class WishlistNotFoundException(WishlistException):
     """ Raised when a given wishlist resource cannot be found for a specific id """
-
-
-class WishlistItemNotFoundException(WishlistException):
-    """ Raised when a wishlist item is unable to be retrieved """
 
 
 class WishlistOperationNotPermittedException(WishlistException):
