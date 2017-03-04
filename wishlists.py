@@ -99,7 +99,7 @@ def read_wishlist_item_by_id(wishlist_id, item_id):
     """
     
     try:
-        item = db.retrieve_item(wishlist_id, item_id)
+        item = db.retrieve_item(wishlist_id, item_id=item_id)
         return item, HTTP_200_OK
     except ItemException:
         return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
@@ -113,7 +113,7 @@ def read_wishlist_item_by_index(wishlist_id, item_index):
     """
     
     try:
-        item = db.retrieve_item(wishlist_id, item_id)
+        item = db.retrieve_item(wishlist_id, item_index=item_index)
         return item, HTTP_200_OK
     except ItemException:
         return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND

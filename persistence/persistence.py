@@ -175,7 +175,7 @@ class DatabaseEngine(object):
         else:
             raise WishlistNotFoundException
 
-    def remove_item(self, wishlist_id, item_id):
+    def remove_item(self, wishlist_id, item_id=None, item_index=None):
         """
         Given a wishlist_id and item_id, remove the item in the wishlist
         that matches up with the item_id
@@ -187,10 +187,21 @@ class DatabaseEngine(object):
         """
 
         if self._verify_wishlist_exists(wishlist_id):
-            try:
-                del self._wishlist_resources[wishlist_id]['items'][item_id]
-            except KeyError:
+
+            if item_id:
+                # get item via its unique id
+                item_to_remove = self._retrieve_item(wishlist_id, item_id=item_id)
+
+            elif item_index:
+                # get item via its index
+                item_to_remove = self._retrieve_item(wishlist_id, item_index=item_index)
+
+            if item_to_remove:
+                item_to_remove_index = self._wishlist_resources[wishlist_id]['items'].index(item_to_remove)
+                del self._wishlist_resources[wishlist_id]['items'][item_to_remove_index]
+            else:
                 raise ItemNotFoundException
+
         else:
             # the wishlist does not exist or has been deleted
             raise WishlistNotFoundException
@@ -223,7 +234,7 @@ class DatabaseEngine(object):
         else:
             raise WishlistNotFoundException
 
-    def update_wishlist_item(self, wishlist_id, item_id, **kwargs):
+    def update_wishlist_item(self, wishlist_id, item_id=None, item_index=None, **kwargs):
         """
         NOTE: You must pass in a dictionary with "**" in front of it for the kwargs argument.
         As of right now this is probably excessive since we only have one field that can be
@@ -243,17 +254,24 @@ class DatabaseEngine(object):
         """
 
         if self._verify_wishlist_exists(wishlist_id):
-            try:
-                for key in kwargs:
-                    if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
-                        # OK to update the item
-                        self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
-            except KeyError:
-                # the item did not exist
-                raise WishlistItemNotFoundException
 
-            # return the modified resource
-            return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
+            if item_id:
+                try:
+                    for key in kwargs:
+                        if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
+                            self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
+                except KeyError:
+                    raise ItemNotFoundException
+
+            elif item_index:
+                try:
+                    for key in kwargs:
+                        if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
+                            self._wishlist_resources[wishlist_id]['items'][item_index][key] = kwargs.get(key)
+                except IndexError:
+                    # note the different exception type to be caught
+                    raise ItemNotFoundException
+
         else:
             raise WishlistNotFoundException
 
