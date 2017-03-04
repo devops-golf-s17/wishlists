@@ -93,7 +93,21 @@ def item(wishlist_id):
             return jsonify(message='Could not find a wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
-def read_wishlist_item(wishlist_id, item_id):
+def read_wishlist_item_by_id(wishlist_id, item_id):
+    """
+    The route for retrieving a specific item in a wishlist.
+    """
+    
+    try:
+        item = db.retrieve_item(wishlist_id, item_id)
+        return item, HTTP_200_OK
+    except ItemException:
+        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
+
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['GET'])
+def read_wishlist_item_by_index(wishlist_id, item_index):
     """
     The route for retrieving a specific item in a wishlist.
     """
