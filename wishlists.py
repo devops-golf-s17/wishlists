@@ -164,7 +164,7 @@ def clear_wishlist(wishlist_id):
         
         for key,value in items_dict.iteritems():
             try:
-                    db.remove_item(wishlist_id, key)
+                db.remove_item(wishlist_id, key)
             except ItemException:
                 message = { 'error' : 'Item %d was not found' % value}
                 return jsonify(message), HTTP_404_NOT_FOUND
