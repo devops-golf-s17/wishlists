@@ -276,14 +276,12 @@ class DatabaseEngine(object):
 
             elif modified_item_index is not None:
                 # much easier this way
-                print 'test'
                 try:
                     for key in kwargs:
                         if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
                             self._wishlist_resources[wishlist_id]['items'][modified_item_index][key] = kwargs.get(key)
                     return json.dumps(self._wishlist_resources[wishlist_id]['items'][modified_item_index], indent=4)
                 except IndexError as e:
-                    print str(e)
                     raise ItemNotFoundException
 
         else:

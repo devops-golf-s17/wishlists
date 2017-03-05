@@ -52,7 +52,6 @@ def add_item_to_wishlist(wishlist_id):
     tempDic['description'] = request.json['description']
     try:
         add_item_response = db.add_item(wishlist_id, tempDic)
-        print add_item_response
         return add_item_response, HTTP_201_CREATED
     except WishlistException:
         return jsonify(message='Cannot add a new item %s' % request.json['item_id']), HTTP_400_BAD_REQUEST
