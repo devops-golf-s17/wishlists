@@ -183,7 +183,8 @@ class DatabaseEngine(object):
         This operation will completely remove the item from the items dictionary.
 
         :param wishlist_id: <int> the id of the wishlist from which an item will be deleted
-        :param item_id: <str> the id of the item to delete
+        :param item_id: <str|None> the id of the item to delete
+        :param item_index: <int|None> the index of the item in the wishlist's items collection
         """
 
         if self._verify_wishlist_exists(wishlist_id):
@@ -247,7 +248,9 @@ class DatabaseEngine(object):
         (and hence performs an update).
 
         :param wishlist_id: <int> the id of the wishlist to which the item to be modified belongs
-        :param item_id: <str> the id of the item to be modified
+        :param item_id: <str|None> the id of the item to be modified
+        :param item_index: <int|None> the index of the item in the wishlist's items collection
+
         :param kwargs: <dict> a variable number of key/value pairs that may contain fields to be updated
 
         :return: <str> the modified wishlist resource as a JSON string
@@ -256,20 +259,27 @@ class DatabaseEngine(object):
         if self._verify_wishlist_exists(wishlist_id):
 
             if item_id:
-                try:
-                    for key in kwargs:
-                        if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
-                            self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
-                except KeyError:
+                items = self._collect_items(wishlist_id)
+                item_found = False
+                # not efficient or elegant, but this will be deprecated once we have proper db support
+                for item in items:
+                    if item.get('item_id') == item_id:
+                        item_found = True
+                        matching_item_index = items.index(item)
+                        for key in kwargs:
+                            if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
+                                self._wishlist_resources[wishlist_id]['items'][matching_item_index][key] = kwargs.get(key)
+                if not item_found:
+                    # if we didn't find a matching item after iterating through all items
                     raise ItemNotFoundException
 
             elif item_index:
+                # much easier this way
                 try:
                     for key in kwargs:
                         if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
                             self._wishlist_resources[wishlist_id]['items'][item_index][key] = kwargs.get(key)
                 except IndexError:
-                    # note the different exception type to be caught
                     raise ItemNotFoundException
 
         else:
@@ -317,7 +327,8 @@ class DatabaseEngine(object):
         Collect a specific item associated with a wishlist.
 
         :param wishlist_id: <int> the wishlist from which an item will be retrieved
-        :param item_id: <str> the id of the item to be retrieved
+        :param item_id: <str|None> the id of the item to be retrieved
+        :param item_index: <int|None> the index of the item in the wishlist's items collection
 
         :return: <str> a JSON string representation of the desired item resource
         """
