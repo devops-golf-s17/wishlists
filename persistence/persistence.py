@@ -106,7 +106,7 @@ class DatabaseEngine(object):
             else:
                 return desired_item
 
-        elif item_index:
+        elif item_index is not None:
             # query by the index of the item list
             try:
                 desired_item = self._collect_items(wishlist_id)[item_index]
@@ -141,7 +141,6 @@ class DatabaseEngine(object):
 
         :return: <str> the JSON string representation of the newly added item resource
         """
-
         new_item_id = new_item_data.get('item_id')
         new_item_description = new_item_data.get('description')
 
@@ -154,24 +153,21 @@ class DatabaseEngine(object):
                     # note: although it would not be an issue to merely overwrite the data,
                     # that would not be a proper result of a POST request to add an item
                     raise WishlistOperationNotPermittedException
-                else:
-                    # add a new item
-                    self._wishlist_resources[wishlist_id]['items'].append(
-                        {
-                            'item_id': new_item_id,
-                            'description': new_item_description
-                        }
-                    )
-                    # we may decide to make the index more "user-friendly" in the future (i.e., all indices > 1)
-                    # note that the length of the list prior to adding the item is actually the index of the new item
-                    return json.dumps(
-                        {
-                            'item_index': number_of_items,
-                            'item_id': new_item_id,
-                            'description': new_item_description
-                        },
-                        indent=4
-                    )
+
+            self._wishlist_resources[wishlist_id]['items'].append(
+                {
+                    'item_id': new_item_id,
+                    'description': new_item_description
+                }
+            )
+
+            return json.dumps(
+                {
+                    'item_id': new_item_id,
+                    'description': new_item_description
+                },
+                indent=4
+            )
         else:
             raise WishlistNotFoundException
 
@@ -193,7 +189,7 @@ class DatabaseEngine(object):
                 # get item via its unique id
                 item_to_remove = self._retrieve_item(wishlist_id, item_id=item_id)
 
-            elif item_index:
+            elif item_index is not None:
                 # get item via its index
                 item_to_remove = self._retrieve_item(wishlist_id, item_index=item_index)
 
@@ -235,11 +231,14 @@ class DatabaseEngine(object):
         else:
             raise WishlistNotFoundException
 
-    def update_wishlist_item(self, wishlist_id, item_id=None, item_index=None, **kwargs):
+    def update_wishlist_item(self, wishlist_id, modified_item_id=None, modified_item_index=None, **kwargs):
         """
         NOTE: You must pass in a dictionary with "**" in front of it for the kwargs argument.
         As of right now this is probably excessive since we only have one field that can be
         updated, but it will be useful later on.
+
+        We need to use modified_item_* in order to avoid conflicts in the name space, since
+        kwargs will unpack into "item_id" and "description" (among other keywords).
 
         Accepts a wishlist_id, item_id, and a dictioanry of terms before
         looping through them to see if any match up with the updateable fields
@@ -248,8 +247,8 @@ class DatabaseEngine(object):
         (and hence performs an update).
 
         :param wishlist_id: <int> the id of the wishlist to which the item to be modified belongs
-        :param item_id: <str|None> the id of the item to be modified
-        :param item_index: <int|None> the index of the item in the wishlist's items collection
+        :param modified_item_id: <str|None> the id of the item to be modified
+        :param modified_item_index: <int|None> the index of the item in the wishlist's items collection
 
         :param kwargs: <dict> a variable number of key/value pairs that may contain fields to be updated
 
@@ -258,28 +257,33 @@ class DatabaseEngine(object):
 
         if self._verify_wishlist_exists(wishlist_id):
 
-            if item_id:
+            if modified_item_id:
                 items = self._collect_items(wishlist_id)
                 item_found = False
                 # not efficient or elegant, but this will be deprecated once we have proper db support
                 for item in items:
-                    if item.get('item_id') == item_id:
+                    if item.get('item_id') == modified_item_id:
                         item_found = True
                         matching_item_index = items.index(item)
                         for key in kwargs:
                             if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
                                 self._wishlist_resources[wishlist_id]['items'][matching_item_index][key] = kwargs.get(key)
+
+                    return json.dumps(self._wishlist_resources[wishlist_id]['items'][matching_item_index], indent=4)
                 if not item_found:
                     # if we didn't find a matching item after iterating through all items
                     raise ItemNotFoundException
 
-            elif item_index:
+            elif modified_item_index is not None:
                 # much easier this way
+                print 'test'
                 try:
                     for key in kwargs:
                         if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
-                            self._wishlist_resources[wishlist_id]['items'][item_index][key] = kwargs.get(key)
-                except IndexError:
+                            self._wishlist_resources[wishlist_id]['items'][modified_item_index][key] = kwargs.get(key)
+                    return json.dumps(self._wishlist_resources[wishlist_id]['items'][modified_item_index], indent=4)
+                except IndexError as e:
+                    print str(e)
                     raise ItemNotFoundException
 
         else:
@@ -340,7 +344,7 @@ class DatabaseEngine(object):
                 # retrieve item based on its unique id
                 item = self._retrieve_item(wishlist_id, item_id=item_id)
             
-            elif item_index:
+            elif item_index is not None:
                 # retrieve item based on its index in the item collection
                 item = self._retrieve_item(wishlist_id, item_index=item_index)
 
