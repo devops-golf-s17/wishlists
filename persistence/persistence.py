@@ -39,7 +39,7 @@ class DatabaseEngine(object):
         new_wishlist = {}
         new_wishlist['name'] = name
         new_wishlist['user_id'] = user_id
-        new_wishlist['items'] = {}
+        new_wishlist['items'] = []
         # get a nicely formatted, human-readable datetime
         new_wishlist['created'] = str(datetime.utcnow())
         new_wishlist['deleted'] = False
@@ -77,8 +77,42 @@ class DatabaseEngine(object):
         """
 
         items = self._wishlist_resources[wishlist_id]['items']
-        formatted_items = [{'id': key, 'description': value['description']} for key, value in items.iteritems()]
-        return formatted_items
+        return items
+    
+    def _retrieve_item(self, wishlist_id, item_id=None, item_index=None):
+        """
+        Private method that does the work for the public retrieve_item; namely,
+        performs a "smart" search for an item based on the parameters that exist.
+        If item_id exists, then a search is performed to find an item with a matching
+        id.  Otherwise, if item_index is passed in then a search is performed based on
+        index.  Either way, the result of the search is passed back for retrieve_item to process.
+
+        :param item_id: <str> the unique id of the item
+        :param item_index: <int> the index id of the item in the item collection
+
+        :return: <Item|None> the item object if it was found, or None if it was not
+        """
+        desired_item = None
+
+        if item_id:
+            # we have already verified that the wishlist exists in retrieve_item
+            all_items = self._collect_items(wishlist_id)
+            for item in all_items:
+                if item.get('item_id') == item_id:
+                    desired_item = item
+            
+            if desired_item:
+                return json.dumps(desired_item, indent=4)
+            else:
+                return desired_item
+
+        elif item_index is not None:
+            # query by the index of the item list
+            try:
+                desired_item = self._collect_items(wishlist_id)[item_index]
+                return desired_item
+            except IndexError:
+                return None
 
     def delete_wishlist(self, wishlist_id):
         """
@@ -95,7 +129,7 @@ class DatabaseEngine(object):
             # cannot delete something that did not exist beforehand
             raise WishlistNotFoundException
 
-    def add_item(self, wishlist_id, item_data):
+    def add_item(self, wishlist_id, new_item_data):
         """
         Accepts the id for a wishlist resource, as well
         as data to be used for adding a new item.  It is
@@ -107,24 +141,37 @@ class DatabaseEngine(object):
 
         :return: <str> the JSON string representation of the newly added item resource
         """
-
-        item_id = item_data.get('id')
-        item_description = item_data.get('description')
+        new_item_id = new_item_data.get('item_id')
+        new_item_description = new_item_data.get('description')
 
         if self._verify_wishlist_exists(wishlist_id):
-            if item_id in self._wishlist_resources[wishlist_id]['items']:
-                # one cannot add an item that already exists
-                # note: although it would not be an issue to merely overwrite the data,
-                # that would not be a proper result of a POST request to add an item
-                raise WishlistOperationNotPermittedException
-            else:
-                # add a new item
-                self._wishlist_resources[wishlist_id]['items'][item_id] = {'description': item_description}
-                return json.dumps({'id': item_id, 'description': item_description}, indent=4)
+            wishlist_items = self._collect_items(wishlist_id)
+            number_of_items = len(wishlist_items)
+            for item in wishlist_items:
+                if new_item_id == item.get('item_id'):
+                    # one cannot add an item that already exists
+                    # note: although it would not be an issue to merely overwrite the data,
+                    # that would not be a proper result of a POST request to add an item
+                    raise WishlistOperationNotPermittedException
+
+            self._wishlist_resources[wishlist_id]['items'].append(
+                {
+                    'item_id': new_item_id,
+                    'description': new_item_description
+                }
+            )
+
+            return json.dumps(
+                {
+                    'item_id': new_item_id,
+                    'description': new_item_description
+                },
+                indent=4
+            )
         else:
             raise WishlistNotFoundException
 
-    def remove_item(self, wishlist_id, item_id):
+    def remove_item(self, wishlist_id, item_id=None, item_index=None):
         """
         Given a wishlist_id and item_id, remove the item in the wishlist
         that matches up with the item_id
@@ -132,14 +179,26 @@ class DatabaseEngine(object):
         This operation will completely remove the item from the items dictionary.
 
         :param wishlist_id: <int> the id of the wishlist from which an item will be deleted
-        :param item_id: <str> the id of the item to delete
+        :param item_id: <str|None> the id of the item to delete
+        :param item_index: <int|None> the index of the item in the wishlist's items collection
         """
 
         if self._verify_wishlist_exists(wishlist_id):
-            try:
-                del self._wishlist_resources[wishlist_id]['items'][item_id]
-            except KeyError:
+
+            if item_id:
+                # get item via its unique id
+                item_to_remove = self._retrieve_item(wishlist_id, item_id=item_id)
+
+            elif item_index is not None:
+                # get item via its index
+                item_to_remove = self._retrieve_item(wishlist_id, item_index=item_index)
+
+            if item_to_remove:
+                item_to_remove_index = self._wishlist_resources[wishlist_id]['items'].index(item_to_remove)
+                del self._wishlist_resources[wishlist_id]['items'][item_to_remove_index]
+            else:
                 raise ItemNotFoundException
+
         else:
             # the wishlist does not exist or has been deleted
             raise WishlistNotFoundException
@@ -172,11 +231,14 @@ class DatabaseEngine(object):
         else:
             raise WishlistNotFoundException
 
-    def update_wishlist_item(self, wishlist_id, item_id, **kwargs):
+    def update_wishlist_item(self, wishlist_id, modified_item_id=None, modified_item_index=None, **kwargs):
         """
         NOTE: You must pass in a dictionary with "**" in front of it for the kwargs argument.
         As of right now this is probably excessive since we only have one field that can be
         updated, but it will be useful later on.
+
+        We need to use modified_item_* in order to avoid conflicts in the name space, since
+        kwargs will unpack into "item_id" and "description" (among other keywords).
 
         Accepts a wishlist_id, item_id, and a dictioanry of terms before
         looping through them to see if any match up with the updateable fields
@@ -185,24 +247,43 @@ class DatabaseEngine(object):
         (and hence performs an update).
 
         :param wishlist_id: <int> the id of the wishlist to which the item to be modified belongs
-        :param item_id: <str> the id of the item to be modified
+        :param modified_item_id: <str|None> the id of the item to be modified
+        :param modified_item_index: <int|None> the index of the item in the wishlist's items collection
+
         :param kwargs: <dict> a variable number of key/value pairs that may contain fields to be updated
 
         :return: <str> the modified wishlist resource as a JSON string
         """
 
         if self._verify_wishlist_exists(wishlist_id):
-            try:
-                for key in kwargs:
-                    if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
-                        # OK to update the item
-                        self._wishlist_resources[wishlist_id]['items'][item_id][key] = kwargs.get(key)
-            except KeyError:
-                # the item did not exist
-                raise WishlistItemNotFoundException
 
-            # return the modified resource
-            return json.dumps(self._wishlist_resources[wishlist_id], indent=4)
+            if modified_item_id:
+                items = self._collect_items(wishlist_id)
+                item_found = False
+                # not efficient or elegant, but this will be deprecated once we have proper db support
+                for item in items:
+                    if item.get('item_id') == modified_item_id:
+                        item_found = True
+                        matching_item_index = items.index(item)
+                        for key in kwargs:
+                            if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
+                                self._wishlist_resources[wishlist_id]['items'][matching_item_index][key] = kwargs.get(key)
+
+                    return json.dumps(self._wishlist_resources[wishlist_id]['items'][matching_item_index], indent=4)
+                if not item_found:
+                    # if we didn't find a matching item after iterating through all items
+                    raise ItemNotFoundException
+
+            elif modified_item_index is not None:
+                # much easier this way
+                try:
+                    for key in kwargs:
+                        if key in DatabaseEngine.UPDATABLE_ITEM_FIELDS:
+                            self._wishlist_resources[wishlist_id]['items'][modified_item_index][key] = kwargs.get(key)
+                    return json.dumps(self._wishlist_resources[wishlist_id]['items'][modified_item_index], indent=4)
+                except IndexError as e:
+                    raise ItemNotFoundException
+
         else:
             raise WishlistNotFoundException
 
@@ -243,30 +324,34 @@ class DatabaseEngine(object):
 
         return json.dumps(all_wishlists, indent=4)
     
-    def retrieve_item(self, wishlist_id, item_id):
+    def retrieve_item(self, wishlist_id, item_id=None, item_index=None):
         """
         Collect a specific item associated with a wishlist.
 
         :param wishlist_id: <int> the wishlist from which an item will be retrieved
-        :param item_id: <str> the id of the item to be retrieved
+        :param item_id: <str|None> the id of the item to be retrieved
+        :param item_index: <int|None> the index of the item in the wishlist's items collection
 
         :return: <str> a JSON string representation of the desired item resource
         """
-        desired_item = None
-
+        
         if self._verify_wishlist_exists(wishlist_id):
-            all_items = self._collect_items(wishlist_id)
-            for item in all_items:
-                if item.get('id') == item_id:
-                    desired_item = item
+            item = None
+
+            if item_id:
+                # retrieve item based on its unique id
+                item = self._retrieve_item(wishlist_id, item_id=item_id)
+            
+            elif item_index is not None:
+                # retrieve item based on its index in the item collection
+                item = self._retrieve_item(wishlist_id, item_index=item_index)
+
+            if item:
+                return json.dumps(item, indent=4)
+            else:
+                raise ItemNotFoundException
         else:
             raise WishlistNotFoundException
-        
-        if desired_item:
-            return json.dumps(desired_item, indent=4)
-        
-        else:
-            raise ItemNotFoundException
 
     def retrieve_all_items(self, wishlist_id=None):
         """

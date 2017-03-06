@@ -17,7 +17,6 @@ HTTP_400_BAD_REQUEST = 400
 HTTP_404_NOT_FOUND = 404
 HTTP_409_CONFLICT = 409
 
-#db.create_wishlist('jesse','test')
 
 @app.route('/')
 def index():
@@ -27,35 +26,35 @@ def index():
 
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
-	"""
-	The route for adding new wishlists, specified by userID and name of the wishlist. You can check 
-	the POST requests using CURL.
-	Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"name":"Xynazog","user_id":123}' http://127.0.0.1:5000/wishlists
-	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
-	"""
+    """
+    The route for adding new wishlists, specified by userID and name of the wishlist. You can check
+    the POST requests using CURL.
+    Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"name":"Xynazog","user_id":123}' http://127.0.0.1:5000/wishlists
+    H is for headers, X is used to specify HTTP Method, d is used to pass a message.
+    """
     
-	name = request.json['name']
-	uid = request.json['user_id']
-	try:
-		return db.create_wishlist(name,uid), HTTP_200_OK
-	except WishlistException:
-		return jsonify(message='Cannot create a new wishlist named %s' % name), HTTP_400_BAD_REQUEST
+    name = request.json['name']
+    uid = request.json['user_id']
+    try:
+        return db.create_wishlist(name,uid), HTTP_200_OK
+    except WishlistException:
+        return jsonify(message='Cannot create a new wishlist named %s' % name), HTTP_400_BAD_REQUEST
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
 def add_item_to_wishlist(wishlist_id):
-	"""
-	The route for adding new items to the wishlist. This method can also be checked using CURL.
-	Pre-requisite: Create a wishlist to add an item.
-	Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"id":"i123","description":"Awesome product!"}' http://127.0.0.1:5000/wishlists/1/items
-	"""
-    
-	tempDic = {}
-	tempDic['id'] = request.json['id']
-	tempDic['description'] = request.json['description']
-	try:
-		return db.add_item(wishlist_id,tempDic), HTTP_200_OK
-	except WishlistException:
-		return jsonify(message='Cannot add a new item %s' % request.json['id']), HTTP_400_BAD_REQUEST
+    """
+    The route for adding new items to the wishlist. This method can also be checked using CURL.
+    Pre-requisite: Create a wishlist to add an item.
+    Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"id":"i123","description":"Awesome product!"}' http://127.0.0.1:5000/wishlists/1/items
+    """
+    tempDic = {}
+    tempDic['item_id'] = request.json['item_id']
+    tempDic['description'] = request.json['description']
+    try:
+        add_item_response = db.add_item(wishlist_id, tempDic)
+        return add_item_response, HTTP_201_CREATED
+    except WishlistException:
+        return jsonify(message='Cannot add a new item %s' % request.json['item_id']), HTTP_400_BAD_REQUEST
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
@@ -92,19 +91,34 @@ def item(wishlist_id):
         except WishlistException:
             return jsonify(message='Could not find a wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
 
-@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
-def read_wishlist_item(wishlist_id, item_id):
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['GET'])
+def read_wishlist_item_by_index(wishlist_id, item_index):
     """
     The route for retrieving a specific item in a wishlist.
     """
-    
+
     try:
-        item = db.retrieve_item(wishlist_id, item_id)
+        # the internal index is 1 less - this is true for all methods that accept an item_index
+        item = db.retrieve_item(wishlist_id, item_index=item_index - 1)
+        return item, HTTP_200_OK
+    except ItemException:
+        return jsonify(message='Item with id %s could not be found' % item_index), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
+def read_wishlist_item_by_id(wishlist_id, item_id):
+    """
+    The route for retrieving a specific item in a wishlist.
+    """
+
+    try:
+        item = db.retrieve_item(wishlist_id, item_id=item_id)
         return item, HTTP_200_OK
     except ItemException:
         return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
 
 @app.route('/wishlists/<int:id>', methods=['PUT'])
 def update_wishlist(id):
@@ -119,15 +133,33 @@ def update_wishlist(id):
         message = { 'error' : 'Wishlist %s was not found' % id }
         return jsonify(message), HTTP_404_NOT_FOUND
 
-@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
-def update_wishlist_item(wishlist_id, item_id):
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['PUT'])
+def update_wishlist_item_by_index(wishlist_id, item_index):
     """
     The route for modifying the description of an item in a specific wishlist.
+    Accepts an int for the item's index.
     """
 
     try:
         data = request.get_json()
-        return db.update_wishlist_item(wishlist_id, item_id, **data ), HTTP_200_OK
+        return db.update_wishlist_item(wishlist_id, modified_item_index=item_index - 1, **data), HTTP_200_OK
+    except WishlistException:
+        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+        return jsonify(message), HTTP_404_NOT_FOUND
+    except ItemException:
+        message = { 'error' : 'Item with index %s was not found' % item_index }
+        return jsonify(message), HTTP_404_NOT_FOUND
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
+def update_wishlist_item_by_id(wishlist_id, item_id):
+    """
+    The route for modifying the description of an item in a specific wishlist.
+    Accepts a str id for the item_id.
+    """
+
+    try:
+        data = request.get_json()
+        return db.update_wishlist_item(wishlist_id, modified_item_id=item_id, **data ), HTTP_200_OK
     except WishlistException:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
         return jsonify(message), HTTP_404_NOT_FOUND
@@ -135,26 +167,40 @@ def update_wishlist_item(wishlist_id, item_id):
         message = { 'error' : 'Item %s was not found' % item_id }
         return jsonify(message), HTTP_404_NOT_FOUND
 
-@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
-def remove_wishlist_item(wishlist_id, item_id):
+@app.route('/wishlists/<int:wishlist_id>/items/<int:item_index>', methods=['DELETE'])
+def remove_wishlist_item_by_index(wishlist_id, item_index):
     """
     The route for removing a specific item in a wishlist,
     given a wishlist_id and the item_id
     """
-    
+
     try:
-        db.remove_item(wishlist_id, item_id)
+        db.remove_item(wishlist_id, item_index=item_index - 1)
+        return '', HTTP_204_NO_CONTENT
+    except ItemException:
+        return jsonify(message='Item with id %s could not be found' % item_index), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
+def remove_wishlist_item_by_id(wishlist_id, item_id):
+    """
+    The route for removing a specific item in a wishlist,
+    given a wishlist_id and the item_id
+    """
+
+    try:
+        db.remove_item(wishlist_id, item_id=item_id)
         return '', HTTP_204_NO_CONTENT
     except ItemException:
         return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND      
-
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
 
 if __name__ == '__main__':
 
     # Pull options from environment
     debug = os.getenv('DEBUG', 'False') == 'True'
     port = os.getenv('PORT', '5000')
-	
+
     app.run(host='0.0.0.0', port=int(port), debug=debug)
