@@ -61,7 +61,11 @@ Vagrant.configure(2) do |config|
     sudo apt-get update
     sudo apt-get install -y git python-pip python-dev build-essential
     sudo apt-get -y autoremove
-	# Install app dependencies
+  # Install the Cloud Foundry CLI
+    wget -O cf-cli-installer_6.25.0_x86-64.deb 'https://cli.run.pivotal.io/stable?release=debian64&version=6.24.0&source=github-rel'
+    sudo dpkg -i cf-cli-installer_6.25.0_x86-64.deb
+    rm cf-cli-installer_6.25.0_x86-64.deb
+  # Install app dependencies
     cd /vagrant
     sudo pip install -r requirements.txt 
   SHELL
