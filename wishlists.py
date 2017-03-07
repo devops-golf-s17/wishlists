@@ -4,7 +4,7 @@ from flask import Flask, Response, jsonify, request, json, make_response
 
 from persistence import db
 
-from persistence.persistence import WishlistException, ItemException
+from persistence.persistence import WishlistException, ItemException, WishlistItemNotFoundException
 
 # Create Flask application
 app = Flask(__name__)
@@ -174,10 +174,24 @@ def clear_wishlist(wishlist_id):
         return jsonify(message), HTTP_404_NOT_FOUND
 
 
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
+def remove_wishlist_item(wishlist_id, item_id):
+    """
+    The route for removing a specific item in a wishlist,
+    given a wishlist_id and the item_id
+    """
+    try:
+        db.remove_item(wishlist_id, item_id)
+        return "", HTTP_204_NO_CONTENT
+    except WishlistItemNotFoundException:
+        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
+    except WishlistException:
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+
 if __name__ == '__main__':
 
     # Pull options from environment
     debug = os.getenv('DEBUG', 'False') == 'True'
     port = os.getenv('PORT', '5000')
 	
-    app.run(host='0.0.0.0', port=int(port), debug=debug)
+    app.run(host='0.0.0.0', port=int(port), debug=True)
