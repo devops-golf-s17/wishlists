@@ -16,6 +16,7 @@ from persistence import db
 # create a new wishlist -> POST /wishlists
 print '### CREATE WISHLIST TEST ###'
 response = json.loads(db.create_wishlist('my_wishlist', 'best_user'))
+response = json.loads(db.create_wishlist('my_wishlist', 'new_user'))
 wishlist_id = response.get('id')
 print 'wishlist_id:{}'.format(wishlist_id)
 
@@ -87,3 +88,13 @@ wishlist_3_id = json.loads(response_3).get('id')
 
 db.add_item(wishlist_3_id, ITEM_3)
 print db.retrieve_all_wishlists(include_deleted=True)
+
+
+print "### SEARCH RESULTS ###"
+ITEM_4 = {
+    'id': 'ada12',
+    'description': 'def456 is a cool item indeed!'
+}
+
+db.add_item(wishlist_id_2, ITEM_4)
+print db.search_all_items("def456","jessie")

@@ -170,6 +170,7 @@ def clear_wishlist(wishlist_id):
                 return jsonify(message), HTTP_404_NOT_FOUND
         return db.retrieve_wishlist(wishlist_id), HTTP_200_OK
     except WishlistException:
+
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
         return jsonify(message), HTTP_404_NOT_FOUND
 
@@ -186,6 +187,19 @@ def delete_wishlist(wishlist_id):
     except WishlistException:
         return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
 
+
+@app.route('/wishlists/search', methods=['GET'])
+def search_wishlists():
+    """
+    The route for searching items with specific keyword or ID.
+    """
+    try:
+        query = request.args.get('q', None)
+        uid = request.args.get('user_id',None)
+        items = db.search_all_items(query,uid)
+        return items, HTTP_200_OK
+    except ItemException:
+        return jsonify(message='Item with query %s not found'%query), HTTP_404_NOT_FOUND
 
 if __name__ == '__main__':
 

@@ -38,7 +38,7 @@ class DatabaseEngine(object):
         """
         new_wishlist = {}
         new_wishlist['name'] = name
-        new_wishlist['user_id'] = user_id
+        new_wishlist['user_id'] = str(user_id)
         new_wishlist['items'] = {}
         # get a nicely formatted, human-readable datetime
         new_wishlist['created'] = str(datetime.utcnow())
@@ -292,6 +292,32 @@ class DatabaseEngine(object):
                 items_to_retrieve[wishlist_key] = self._collect_items(wishlist_key)
 
         return json.dumps(items_to_retrieve, indent=4)
+
+    def search_all_items(self, keyword, user_id ,include_deleted = False):
+        """
+        Find all items which have that specific key word / phrase inside.
+        Returns a JSON string containing those items.
+        """
+        desired_products = {}
+        desired_wishlists = []
+        if include_deleted:
+            desired_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['user_id']==user_id]
+        else:
+            desired_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['deleted'] == False and contents['user_id'] == user_id]
+        for wishlist in desired_wishlists:
+            for k,v in wishlist.iteritems():
+                for key in v['items'].keys():
+                    if keyword in key:
+                        desired_products[key] = v['items'][key]
+                for nested_key,nested_value in v['items'].iteritems():
+                    if keyword in nested_value['description']:
+                        if nested_key not in desired_products:
+                            desired_products[nested_key] = v['items'][nested_key]
+        if desired_products:
+            return json.dumps(desired_products, indent=4)
+        else:                              
+            raise ItemNotFoundException
+                            
 
 
 class WishlistException(Exception):
