@@ -183,16 +183,15 @@ def search_wishlists():
     try:
         query = request.args.get('q', None)
         uid = request.args.get('user_id',None)
-        print query
-        print uid
         items = db.search_all_items(query,uid)
         return items, HTTP_200_OK
     except ItemException:
         return jsonify(message='Item with query %s not found'%query), HTTP_404_NOT_FOUND
+
 if __name__ == '__main__':
 
     # Pull options from environment
     debug = os.getenv('DEBUG', 'False') == 'True'
     port = os.getenv('PORT', '5000')
 
-    app.run(host='0.0.0.0', port=int(port), debug=True)
+    app.run(host='0.0.0.0', port=int(port), debug=debug)
