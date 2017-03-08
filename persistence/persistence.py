@@ -301,7 +301,7 @@ class DatabaseEngine(object):
         desired_products = {}
         desired_wishlists = []
         if include_deleted:
-            desired_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems()]
+            desired_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['user_id']==user_id]
         else:
             desired_wishlists = [{key: contents} for key, contents in self._wishlist_resources.iteritems() if contents['deleted'] == False and contents['user_id'] == user_id]
         for wishlist in desired_wishlists:
