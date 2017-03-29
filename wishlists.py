@@ -37,7 +37,7 @@ def add_wishlist():
 	name = request.json['name']
 	uid = request.json['user_id']
 	try:
-		return db.create_wishlist(name,uid), HTTP_200_OK
+		return db.create_wishlist(name,uid), HTTP_201_CREATED
 	except WishlistException:
 		return jsonify(message='Cannot create a new wishlist named %s' % name), HTTP_400_BAD_REQUEST
 
@@ -53,7 +53,7 @@ def add_item_to_wishlist(wishlist_id):
 	tempDic['id'] = request.json['id']
 	tempDic['description'] = request.json['description']
 	try:
-		return db.add_item(wishlist_id,tempDic), HTTP_200_OK
+		return db.add_item(wishlist_id,tempDic), HTTP_201_CREATED
 	except WishlistException:
 		return jsonify(message='Cannot add a new item %s' % request.json['id']), HTTP_400_BAD_REQUEST
 
@@ -146,9 +146,9 @@ def remove_wishlist_item(wishlist_id, item_id):
         db.remove_item(wishlist_id, item_id)
         return '', HTTP_204_NO_CONTENT
     except ItemException:
-        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
+        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_204_NO_CONTENT
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_204_NO_CONTENT
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
@@ -185,7 +185,7 @@ def delete_wishlist(wishlist_id):
         db.delete_wishlist(wishlist_id)
         return '', HTTP_204_NO_CONTENT
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_204_NO_CONTENT
 
 
 @app.route('/wishlists/search', methods=['GET'])
