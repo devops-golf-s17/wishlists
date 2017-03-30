@@ -7,11 +7,11 @@ import unittest
 from persistence import DatabaseEngine
 
 class WishlistTestCase(unittest.TestCase):
-  def setUp(self):
-    self.db=DatabaseEngine()
+	def setUp(self):
+		self.db=DatabaseEngine()
     
-  def tearDown(self):
-    self.db=None
+	def tearDown(self):
+		self.db=None
     
 if __name__ == '__main__':
-  unittest.main()
+	unittest.main()
