@@ -1,1 +1,13 @@
 Flask==0.12
+Flask-API==0.6.9
+#Testing
+httpie==0.9.9
+nose==1.3.7
+rednose==1.2.1
+pinocchio==0.4.2
+#RspecDSL
+noseOfYeti==1.6
+expects==0.8.0
+#Codecoverage
+coverage==4.2
+codecov==2.0.5
