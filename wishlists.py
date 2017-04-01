@@ -62,8 +62,8 @@ def add_item_to_wishlist(wishlist_id):
         except WishlistException:
             return jsonify(message='Cannot add a new item %s' % request.json['id']), HTTP_400_BAD_REQUEST
     else:
-        message = {'error' : 'Item data was not valid'}
-        return jsonify(message), HTTP_400_BAD_REQUEST
+        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+        return jsonify(message), HTTP_404_NOT_FOUND
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
