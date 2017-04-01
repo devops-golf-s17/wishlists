@@ -11,3 +11,5 @@
 .pydevproject
 .project
 
+#unit tests
+.coverage

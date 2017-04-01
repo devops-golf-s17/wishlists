@@ -111,13 +111,16 @@ def update_wishlist(id):
     """
     The route for modifying a wishlist's user_id or name.
     """
-
-    try:
-        data = request.get_json()
-        return db.update_wishlist(id, **data), HTTP_200_OK
-    except WishlistException:
-        message = { 'error' : 'Wishlist %s was not found' % id }
-        return jsonify(message), HTTP_404_NOT_FOUND
+    data = request.get_json()
+    if is_valid(data, 'wishlist'):
+        try:
+            return db.update_wishlist(id, **data), HTTP_200_OK
+        except WishlistException:
+            message = { 'error' : 'Wishlist %s was not found' % id }
+            return jsonify(message), HTTP_404_NOT_FOUND
+    else:
+        message = {'error' : 'Wishlist data was not valid'}
+        return jsonify(message), HTTP_400_BAD_REQUEST
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
@@ -125,15 +128,19 @@ def update_wishlist_item(wishlist_id, item_id):
     The route for modifying the description of an item in a specific wishlist.
     """
 
-    try:
-        data = request.get_json()
-        return db.update_wishlist_item(wishlist_id, item_id, **data ), HTTP_200_OK
-    except WishlistException:
-        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
-        return jsonify(message), HTTP_404_NOT_FOUND
-    except ItemException:
-        message = { 'error' : 'Item %s was not found' % item_id }
-        return jsonify(message), HTTP_404_NOT_FOUND
+    data=request.get_json()
+    if is_valid(data, 'item'):
+        try:
+            return db.update_wishlist_item(wishlist_id, item_id, **data ), HTTP_200_OK
+        except WishlistException:
+            message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+            return jsonify(message), HTTP_404_NOT_FOUND
+        except ItemException:
+            message = { 'error' : 'Item %s was not found' % item_id }
+            return jsonify(message), HTTP_404_NOT_FOUND
+    else:
+        message = {'error' : 'Item data was not valid'}
+        return jsonify(message), HTTP_400_BAD_REQUEST
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
 def remove_wishlist_item(wishlist_id, item_id):
@@ -200,6 +207,22 @@ def search_wishlists():
         return items, HTTP_200_OK
     except ItemException:
         return jsonify(message='Item with query %s not found'%query), HTTP_404_NOT_FOUND
+
+def is_valid(data, type):
+    valid = False
+    try:
+        if type=='wishlist':
+            name=data['name']
+            user_id=data['user_id']
+            valid=True
+        if type=='item':
+            description=data['description']
+            valid=True
+    except KeyError as e:
+        app.logger.warn('Missing parameter: %p', e)
+    except TypeError as e:
+        app.logger.warn('Invalid Content Type: %c', e)
+    return valid
 
 if __name__ == '__main__':
 
