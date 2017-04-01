@@ -56,6 +56,7 @@ class WishlistTestCase(unittest.TestCase):
 	def test_read_wishlist_item_wishlist_not_found(self):
 		resp = self.app.get('/wishlists/2/items/item2')
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
 	"""
 		Working test case.
 		This is a test case to check whether a wishlist is created or not.
