@@ -70,6 +70,9 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		new_json = json.loads(resp.data)
 		self.assertEqual(new_json['name'],'xynazog')
+		respTwo = self.app.get('/wishlists')
+		all_wishlists_json = json.loads(respTwo.data)
+		self.assertEqual(len(all_wishlists_json),2)
 
 	"""
 		Working test case.
@@ -77,15 +80,17 @@ class WishlistTestCase(unittest.TestCase):
 		POST verb is checked here.
 	"""
 	def test_create_wishlist_item(self):
-		new_wishlist = {'name':'xynazog','user_id':'123'}
-		dataOne = json.dumps(new_wishlist)
-		self.app.post('/wishlists',data=dataOne,content_type='application/json')
 		new_item = {'id':'item3','description':'test item 3'}
 		data = json.dumps(new_item)
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		new_json = json.loads(resp.data)
 		self.assertEqual(new_json['id'],'item3')
+		#Checking number of items - 2 items 'cause one is created.
+		respTwo = self.app.get('/wishlists/1/items')
+		dataTwo = json.loads(respTwo.data)
+		self.assertEqual(len(dataTwo['1']),2)
+		
 
 	"""
 		Not working test case.
@@ -96,7 +101,7 @@ class WishlistTestCase(unittest.TestCase):
 		new_item = {'id':'item3','description':'test item 3'}
 		data = json.dumps(new_item)
 		resp = self.app.post('/wishlists/3/items',data=data,content_type='application/json')
-		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_update_wishlist(self):
 		new_wl = {'name': 'wl2', 'user_id': 'user2'}
