@@ -48,7 +48,6 @@ def add_item_to_wishlist(wishlist_id):
 	Pre-requisite: Create a wishlist to add an item.
 	Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"id":"i123","description":"Awesome product!"}' http://127.0.0.1:5000/wishlists/1/items
 	"""
-
 	tempDic = {}
 	tempDic['id'] = request.json['id']
 	tempDic['description'] = request.json['description']

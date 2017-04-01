@@ -54,5 +54,22 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.put('/wishlists/2', data=data, content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
 
+	"""
+	Working test case.
+	This is a testcase to search an object in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_wishlists(self):
+		resp = self.app.get('/wishlists/search?q=item&user_id=user1')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+	"""
+	Not working test case.
+	This is a testcase to search an object not present in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_not_in_wishlists(self):
+		resp = self.app.get('/wishlists/search?q=Random&user_id=user1')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 if __name__ == '__main__':
 	unittest.main()
