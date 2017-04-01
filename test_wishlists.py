@@ -19,6 +19,52 @@ class WishlistTestCase(unittest.TestCase):
 	def tearDown(self):
 		wishlists.db=DatabaseEngine()
 
+
+	"""
+		Working test case.
+		This is a test case to check whether a wishlist is created or not.
+		POST verb checked here.
+	"""
+	def test_create_wishlist(self):
+		new_wishlist = {'name':'xynazog','user_id':'123'}
+		data = json.dumps(new_wishlist)
+		resp = self.app.post('/wishlists',data=data,content_type='application/json')
+		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+		new_json = json.loads(resp.data)
+		self.assertEqual(new_json['name'],'xynazog')
+		respTwo = self.app.get('/wishlists')
+		all_wishlists_json = json.loads(respTwo.data)
+		self.assertEqual(len(all_wishlists_json),2)
+
+	"""
+		Working test case.
+		This is a test case to check whether an item is added to a wishlist or not.
+		POST verb is checked here.
+	"""
+	def test_create_wishlist_item(self):
+		new_item = {'id':'item3','description':'test item 3'}
+		data = json.dumps(new_item)
+		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
+		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+		new_json = json.loads(resp.data)
+		self.assertEqual(new_json['id'],'item3')
+		#Checking number of items - 2 items 'cause one is created.
+		respTwo = self.app.get('/wishlists/1/items')
+		dataTwo = json.loads(respTwo.data)
+		self.assertEqual(len(dataTwo['1']),2)
+		
+
+	"""
+		Not working test case.
+		This is a test case to check whether an item is added to a wishlist out of index.
+		POST verb is checked here.
+	"""
+	def test_create_wishlist_item_wishlist_not_found(self):
+		new_item = {'id':'item3','description':'test item 3'}
+		data = json.dumps(new_item)
+		resp = self.app.post('/wishlists/3/items',data=data,content_type='application/json')
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
 	def test_update_wishlist(self):
 		new_wl = {'name': 'wl2', 'user_id': 'user2'}
 		data = json.dumps(new_wl)
@@ -53,6 +99,7 @@ class WishlistTestCase(unittest.TestCase):
 		data = json.dumps(new_wl)
 		resp = self.app.put('/wishlists/2', data=data, content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
+
 
 if __name__ == '__main__':
 	unittest.main()
