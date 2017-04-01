@@ -1,7 +1,8 @@
 import os
+import json
 
-from flask import Flask, Response, jsonify, request, json, make_response
-
+from flask import Flask, Response, jsonify, request, json, make_response, url_for
+from flask_api import status
 from persistence import db
 
 from persistence.persistence import WishlistException, ItemException
@@ -32,18 +33,21 @@ def add_wishlist():
     the POST requests using CURL.
     Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"name":"Xynazog","user_id":123}' http://127.0.0.1:5000/wishlists
     H is for headers, X is used to specify HTTP Method, d is used to pass a message.
+    In location headers, if _external set to True, an absolute URL is generated. 
     """
     data = request.get_json()
     if is_valid(data,'wishlist'):
         name = request.json['name']
         uid = request.json['user_id']
         try:
-            return db.create_wishlist(name,uid), HTTP_201_CREATED
+            message = db.create_wishlist(name,uid)
+            load_message = json.loads(message)
+            return make_response(message, status.HTTP_201_CREATED, {'Location': url_for('read_wishlist', wishlist_id=load_message['id'], _external=True)})
         except WishlistException:
-            return jsonify(message='Cannot create a new wishlist named %s' % name), HTTP_400_BAD_REQUEST
+            return make_response(jsonify(message='Cannot create a new wishlist named %s' % name), status.HTTP_400_BAD_REQUEST)
     else:
         message = {'error' : 'Wishlist data was not valid'}
-        return jsonify(message), HTTP_400_BAD_REQUEST
+        return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
 def add_item_to_wishlist(wishlist_id):
@@ -58,12 +62,14 @@ def add_item_to_wishlist(wishlist_id):
             tempDic = {}
             tempDic['id'] = request.json['id']
             tempDic['description'] = request.json['description']
-            return db.add_item(wishlist_id,tempDic), HTTP_201_CREATED
+            message = db.add_item(wishlist_id,tempDic)
+            load_message = json.loads(message)
+            return make_response(message, status.HTTP_201_CREATED, {'Location': url_for('read_wishlist_item', wishlist_id=wishlist_id, item_id=load_message['id'], _external=True)})
         except WishlistException:
-            return jsonify(message='Cannot add a new item %s' % request.json['id']), HTTP_400_BAD_REQUEST
+            return make_response(jsonify(message='Cannot add a new item %s' % request.json['id']), status.HTTP_400_BAD_REQUEST)
     else:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
-        return jsonify(message), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
@@ -72,7 +78,7 @@ def wishlists():
     creating a new wishlist resource via a POST.
     """
 
-    return db.retrieve_all_wishlists(), HTTP_200_OK
+    return make_response(db.retrieve_all_wishlists(), status.HTTP_200_OK)
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
 def read_wishlist(wishlist_id):
@@ -82,9 +88,9 @@ def read_wishlist(wishlist_id):
     """
 
     try:
-        return db.retrieve_wishlist(wishlist_id), HTTP_200_OK
+        return make_response(db.retrieve_wishlist(wishlist_id), status.HTTP_200_OK)
     except WishlistException:
-        return jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
 
 @app.route('/wishlists/<int:wishlist_id>/items', methods=['GET'])
 def item(wishlist_id):
@@ -96,9 +102,9 @@ def item(wishlist_id):
     if request.method == 'GET':
         try:
             items = db.retrieve_all_items(wishlist_id)
-            return items, HTTP_200_OK
+            return make_response(items, status.HTTP_200_OK)
         except WishlistException:
-            return jsonify(message='Could not find a wishlist with id %s' % wishlist_id), HTTP_404_NOT_FOUND
+            return make_response(jsonify(message='Could not find a wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
 def read_wishlist_item(wishlist_id, item_id):
@@ -108,11 +114,11 @@ def read_wishlist_item(wishlist_id, item_id):
 
     try:
         item = db.retrieve_item(wishlist_id, item_id)
-        return item, HTTP_200_OK
+        return make_response(item, status.HTTP_200_OK)
     except ItemException:
-        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_404_NOT_FOUND)
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_404_NOT_FOUND)
 
 @app.route('/wishlists/<int:id>', methods=['PUT'])
 def update_wishlist(id):
@@ -122,13 +128,13 @@ def update_wishlist(id):
     data = request.get_json()
     if is_valid(data, 'wishlist'):
         try:
-            return db.update_wishlist(id, **data), HTTP_200_OK
+            return make_response(db.update_wishlist(id, **data), status.HTTP_200_OK)
         except WishlistException:
             message = { 'error' : 'Wishlist %s was not found' % id }
-            return jsonify(message), HTTP_404_NOT_FOUND
+            return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
     else:
         message = {'error' : 'Wishlist data was not valid'}
-        return jsonify(message), HTTP_400_BAD_REQUEST
+        return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
@@ -139,16 +145,16 @@ def update_wishlist_item(wishlist_id, item_id):
     data=request.get_json()
     if is_valid(data, 'item'):
         try:
-            return db.update_wishlist_item(wishlist_id, item_id, **data ), HTTP_200_OK
+            return make_response(db.update_wishlist_item(wishlist_id, item_id, **data ), status.HTTP_200_OK)
         except WishlistException:
             message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
-            return jsonify(message), HTTP_404_NOT_FOUND
+            return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
         except ItemException:
             message = { 'error' : 'Item %s was not found' % item_id }
-            return jsonify(message), HTTP_404_NOT_FOUND
+            return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
     else:
         message = {'error' : 'Item data was not valid'}
-        return jsonify(message), HTTP_400_BAD_REQUEST
+        return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
 def remove_wishlist_item(wishlist_id, item_id):
@@ -159,11 +165,11 @@ def remove_wishlist_item(wishlist_id, item_id):
 
     try:
         db.remove_item(wishlist_id, item_id)
-        return '', HTTP_204_NO_CONTENT
+        return make_response('', status.HTTP_204_NO_CONTENT)
     except ItemException:
-        return jsonify(message='Item with id %s could not be found' % item_id), HTTP_204_NO_CONTENT
+        return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_204_NO_CONTENT
+        return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
@@ -182,12 +188,11 @@ def clear_wishlist(wishlist_id):
                 db.remove_item(wishlist_id, key)
             except ItemException:
                 message = { 'error' : 'Item %d was not found' % value}
-                return jsonify(message), HTTP_404_NOT_FOUND
-        return db.retrieve_wishlist(wishlist_id), HTTP_200_OK
+                return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+        return make_response(db.retrieve_wishlist(wishlist_id), status.HTTP_200_OK)
     except WishlistException:
-
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
-        return jsonify(message), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['DELETE'])
 def delete_wishlist(wishlist_id):
@@ -198,9 +203,9 @@ def delete_wishlist(wishlist_id):
 
     try:
         db.delete_wishlist(wishlist_id)
-        return '', HTTP_204_NO_CONTENT
+        return make_response('', HTTP_204_NO_CONTENT)
     except WishlistException:
-        return jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_204_NO_CONTENT
+        return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), HTTP_204_NO_CONTENT)
 
 
 @app.route('/wishlists/search', methods=['GET'])
@@ -212,9 +217,9 @@ def search_wishlists():
         query = request.args.get('q', None)
         uid = request.args.get('user_id',None)
         items = db.search_all_items(query,uid)
-        return items, HTTP_200_OK
+        return make_response(items, status.HTTP_200_OK)
     except ItemException:
-        return jsonify(message='Item with query %s not found'%query), HTTP_404_NOT_FOUND
+        return make_response(jsonify(message='Item with query %s not found'%query), status.HTTP_404_NOT_FOUND)
 
 def is_valid(data, type):
     valid = False
