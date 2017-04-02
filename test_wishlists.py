@@ -23,9 +23,16 @@ class WishlistTestCase(unittest.TestCase):
 	def tearDown(self):
 		wishlists.db=DatabaseEngine()
 
+	"""
+		This test case checks the index method.
+	"""
+
+	def test_index(self):
+ 		resp = self.app.get('/')
+		self.assertEqual( resp.status_code, status.HTTP_200_OK )
+		self.assertTrue ('Wishlists REST API Service' in resp.data)
 
 	"""
-		Working test case.
 		This is a test case to check whether all wishlists are returned.
 		GET verb is checked here.
 	"""
@@ -35,7 +42,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertTrue(len(resp.data) > 0)
 
 	"""
-		Working test case.
 		This is a test case to check read a wishlist.
 		GET verb is checked here.
 	"""
@@ -46,7 +52,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(data['user_id'], 'user1')
 
 	"""
-		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist.
 		GET verb is checked here.
 	"""
@@ -54,7 +59,6 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.get('/wishlists/2')
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 	"""
-		Working test case.
 		This is a test case to check read a all the items in a given wishlist.
 		GET verb is checked here.
 	"""
@@ -64,7 +68,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertTrue(len(resp.data) > 0)
 
 	"""
-		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist, but still try to get all items of that list.
 		GET verb is checked here.
 	"""
@@ -73,7 +76,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
-		Working test case.
 		This is a test case to check read an item in a given wishlist.
 		GET verb is checked here.
 	"""
@@ -84,7 +86,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(data['description'], 'test item 1')
 
 	"""
-		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does exist, but the item does not exist.
 		GET verb is checked here.
 	"""
@@ -93,7 +94,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
-		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist nor the item.
 		GET verb is checked here.
 	"""
@@ -217,7 +217,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
 
 	"""
-	Working test case.
 	This is a testcase to search an object in the users wishlist.
 	GET verb checked here.
 	"""
@@ -226,7 +225,6 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
 	"""
-	Not working test case.
 	This is a testcase to search an object not present in the users wishlist.
 	GET verb checked here.
 	"""
