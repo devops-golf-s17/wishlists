@@ -39,12 +39,9 @@ def add_wishlist():
     if is_valid(data,'wishlist'):
         name = request.json['name']
         uid = request.json['user_id']
-        try:
-            message = db.create_wishlist(name,uid)
-            load_message = json.loads(message)
-            return make_response(message, status.HTTP_201_CREATED, {'Location': url_for('read_wishlist', wishlist_id=load_message['id'], _external=True)})
-        except WishlistException:
-            return make_response(jsonify(message='Cannot create a new wishlist named %s' % name), status.HTTP_400_BAD_REQUEST)
+        message = db.create_wishlist(name,uid)
+        load_message = json.loads(message)
+        return make_response(message, status.HTTP_201_CREATED, {'Location': url_for('read_wishlist', wishlist_id=load_message['id'], _external=True)})
     else:
         message = {'error' : 'Wishlist data was not valid'}
         return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
@@ -70,6 +67,7 @@ def add_item_to_wishlist(wishlist_id):
     else:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
         return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
@@ -182,13 +180,8 @@ def clear_wishlist(wishlist_id):
         wl_info = db.retrieve_wishlist(wishlist_id)
         wl = json.loads(wl_info)
         items_dict = wl["items"]
-
         for key,value in items_dict.iteritems():
-            try:
-                db.remove_item(wishlist_id, key)
-            except ItemException:
-                message = { 'error' : 'Item %d was not found' % value}
-                return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+            db.remove_item(wishlist_id, key)
         return make_response(db.retrieve_wishlist(wishlist_id), status.HTTP_200_OK)
     except WishlistException:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
@@ -238,9 +231,7 @@ def is_valid(data, type):
     return valid
 
 if __name__ == '__main__':
-
     # Pull options from environment
     debug = os.getenv('DEBUG', 'False') == 'True'
     port = os.getenv('PORT', '5000')
-
     app.run(host='0.0.0.0', port=int(port), debug=debug)

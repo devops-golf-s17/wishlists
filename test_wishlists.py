@@ -115,7 +115,11 @@ class WishlistTestCase(unittest.TestCase):
 		respTwo = self.app.get('/wishlists')
 		all_wishlists_json = json.loads(respTwo.data)
 		self.assertEqual(len(all_wishlists_json),2)
-
+		new_error_wishlist = {'name':'xynazog'}
+		data = json.dumps(new_error_wishlist)
+		resp = self.app.post('/wishlists', data=data, content_type='application/json')
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+		
 	"""
 		This is a test case to check whether an item is added to a wishlist or not.
 		POST verb is checked here.
@@ -131,7 +135,11 @@ class WishlistTestCase(unittest.TestCase):
 		respTwo = self.app.get('/wishlists/1/items')
 		dataTwo = json.loads(respTwo.data)
 		self.assertEqual(len(dataTwo['1']),2)
-
+		new_error_item = {'id':'item4'}
+		data = json.dumps(new_error_item)
+		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+		
 
 	"""
 		This is a test case to check whether an item is added to a wishlist out of index.
@@ -207,6 +215,24 @@ class WishlistTestCase(unittest.TestCase):
 		data = json.dumps(new_wl)
 		resp = self.app.put('/wishlists/2', data=data, content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
+
+	"""
+	Working test case.
+	This is a testcase to search an object in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_wishlists(self):
+		resp = self.app.get('/wishlists/search?q=item&user_id=user1')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+	"""
+	Not working test case.
+	This is a testcase to search an object not present in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_not_in_wishlists(self):
+		resp = self.app.get('/wishlists/search?q=Random&user_id=user1')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
 		This is a test case to check whether an item is updated.
