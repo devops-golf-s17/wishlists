@@ -26,7 +26,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Working test case.
 		This is a test case to check whether all wishlists are returned.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_wishlists(self):
 		resp = self.app.get('/wishlists')
@@ -36,7 +36,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Working test case.
 		This is a test case to check read a wishlist.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_read_wishlist(self):
 		resp = self.app.get('/wishlists/1')
@@ -47,7 +47,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_read_wishlist_not_found(self):
 		resp = self.app.get('/wishlists/2')
@@ -55,7 +55,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Working test case.
 		This is a test case to check read a all the items in a given wishlist.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_item(self):
 		resp = self.app.get('/wishlists/1/items')
@@ -65,7 +65,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist, but still try to get all items of that list.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_item_not_found(self):
 		resp = self.app.get('/wishlists/2/items')
@@ -85,7 +85,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does exist, but the item does not exist.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_read_wishlist_item_item_not_found(self):
 		resp = self.app.get('/wishlists/1/items/item2')
@@ -94,7 +94,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 		Not working test case.
 		This is a test case to check whether not found will return if the given wishlist does not exist nor the item.
-		POST verb is checked here.
+		GET verb is checked here.
 	"""
 	def test_read_wishlist_item_wishlist_not_found(self):
 		resp = self.app.get('/wishlists/2/items/item2')
