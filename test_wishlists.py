@@ -119,6 +119,7 @@ class WishlistTestCase(unittest.TestCase):
 		data = json.dumps(new_error_wishlist)
 		resp = self.app.post('/wishlists', data=data, content_type='application/json')
 		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+		
 	"""
 		This is a test case to check whether an item is added to a wishlist or not.
 		POST verb is checked here.
