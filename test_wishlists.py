@@ -214,6 +214,32 @@ class WishlistTestCase(unittest.TestCase):
 	def test_clear_wishlist_not_found(self):
 		resp = self.app.put('/wishlists/2/items/clear', content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
+	
+	"""
+        	This is a test case to check whether a wishlist is deleted.
+        	DELETE verb checked here.
+    	"""
+
+    	def test_delete_wishlist(self):
+        	resp = self.app.delete('/wishlists/1', content_type='application/json')
+        	self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        	self.assertEqual(len(resp.data), 0)
+        	respTwo = self.app.get('/wishlists')
+        	all_wishlists_json = json.loads(respTwo.data)
+        	self.assertEqual(len(all_wishlists_json), 0)
+
+    	"""
+        	This is a test case to check whether a message is response when a nonexistent wishlist is deleted
+        	DELETE verb checked here.
+    	"""
+
+    	def test_delete_wishlist_nonexist(self):
+        	resp = self.app.delete('/wishlists/5', content_type='application/json')
+        	self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        	self.assertEqual(len(resp.data), 0)
+        	respTwo = self.app.get('/wishlists')
+        	all_wishlists_json = json.loads(respTwo.data)
+        	self.assertEqual(len(all_wishlists_json), 1)
 
 
 if __name__ == '__main__':
