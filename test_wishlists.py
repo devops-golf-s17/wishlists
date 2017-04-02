@@ -23,6 +23,7 @@ class WishlistTestCase(unittest.TestCase):
 	def tearDown(self):
 		wishlists.db=DatabaseEngine()
 
+
 	"""
 		Working test case.
 		This is a test case to check whether all wishlists are returned.
