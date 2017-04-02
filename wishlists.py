@@ -180,13 +180,8 @@ def clear_wishlist(wishlist_id):
         wl_info = db.retrieve_wishlist(wishlist_id)
         wl = json.loads(wl_info)
         items_dict = wl["items"]
-
         for key,value in items_dict.iteritems():
-            try:
-                db.remove_item(wishlist_id, key)
-            except ItemException:
-                message = { 'error' : 'Item %d was not found' % value}
-                return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+            db.remove_item(wishlist_id, key)
         return make_response(db.retrieve_wishlist(wishlist_id), status.HTTP_200_OK)
     except WishlistException:
         message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
