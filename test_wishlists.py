@@ -25,6 +25,83 @@ class WishlistTestCase(unittest.TestCase):
 
 
 	"""
+		Working test case.
+		This is a test case to check whether all wishlists are returned.
+		GET verb is checked here.
+	"""
+	def test_wishlists(self):
+		resp = self.app.get('/wishlists')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		self.assertTrue(len(resp.data) > 0)
+
+	"""
+		Working test case.
+		This is a test case to check read a wishlist.
+		GET verb is checked here.
+	"""
+	def test_read_wishlist(self):
+		resp = self.app.get('/wishlists/1')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		data = json.loads(resp.data)
+		self.assertEqual(data['user_id'], 'user1')
+
+	"""
+		Not working test case.
+		This is a test case to check whether not found will return if the given wishlist does not exist.
+		GET verb is checked here.
+	"""
+	def test_read_wishlist_not_found(self):
+		resp = self.app.get('/wishlists/2')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+	"""
+		Working test case.
+		This is a test case to check read a all the items in a given wishlist.
+		GET verb is checked here.
+	"""
+	def test_item(self):
+		resp = self.app.get('/wishlists/1/items')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		self.assertTrue(len(resp.data) > 0)
+
+	"""
+		Not working test case.
+		This is a test case to check whether not found will return if the given wishlist does not exist, but still try to get all items of that list.
+		GET verb is checked here.
+	"""
+	def test_item_not_found(self):
+		resp = self.app.get('/wishlists/2/items')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+	"""
+		Working test case.
+		This is a test case to check read an item in a given wishlist.
+		GET verb is checked here.
+	"""
+	def test_read_wishlist_item(self):
+		resp = self.app.get('/wishlists/1/items/item1')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		data = json.loads(resp.data)
+		self.assertEqual(data['description'], 'test item 1')
+
+	"""
+		Not working test case.
+		This is a test case to check whether not found will return if the given wishlist does exist, but the item does not exist.
+		GET verb is checked here.
+	"""
+	def test_read_wishlist_item_item_not_found(self):
+		resp = self.app.get('/wishlists/1/items/item2')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+	"""
+		Not working test case.
+		This is a test case to check whether not found will return if the given wishlist does not exist nor the item.
+		GET verb is checked here.
+	"""
+	def test_read_wishlist_item_wishlist_not_found(self):
+		resp = self.app.get('/wishlists/2/items/item2')
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+	"""
 		This is a test case to check whether a wishlist is created or not.
 		POST verb checked here.
 	"""
