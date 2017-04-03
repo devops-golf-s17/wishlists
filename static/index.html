@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pet Demo RESTful Service</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="static/stylesheets/style.css">
+  </head>
+  <body>
+      <table>
+		<tr>
+            <td style= "width:30%;">
+              <img class = "newappIcon" src="static/images/newapp-icon.png">
+            </td>
+			<td>
+				<h1 id = "message">Wishlists REST API Service</h1>
+				<p class='description'>
+				        GET <a href="/wishlists">/wishlists</a> to see all the wishlists.
+				<br><br>
+                GET /wishlists/{id} retreives a wishlist with ID id.
+        <br><br>
+                GET /wishlists/{id}/items retreives all the items in a wishlist with ID id.
+        <br><br>
+                GET /wishlists/{id}/items/{item_id} retreives a specific item with ID item_id in the wishlist with ID id.
+        <br><br>
+                GET <a href="/wishlists/search?q=Apple&user_id=123">/wishlists/search?q=Apple&user_id=123</a> to query all instances of "Apple" in wishlists with user ID 123.
+				<br><br>
+				        PUT /wishlists/{id} updates a wishlist with ID id.
+        <br><br>
+                PUT /wishlists/{id}/clear/items clears the item in a wishlist with ID id.
+				<br><br>
+                PUT /wishlists/{id}/items/{item_id} updates a item with ID item_id in the wishlist with ID id.
+        <br><br>
+				        DELETE /wishlists/{id} removes the wishlist with ID id.
+        <br><br>
+                DELETE /wishlists/{id}/items/{item_id} removes the item with ID item_id in the wishlist with ID id.
+				<br><br>
+				        POST /wishlists creates a new wishlist.
+                <p>Example Data:</p>
+                <pre>
+    {
+        "name": "wishlist 1",
+        "user_id": "user 1"
+    }
+                </pre>
+        <br><br>
+                POST /wishlists/{id}/items creates a new item in the wishlist with ID id.
+                <p>Example Data:</p>
+                <pre>
+    {
+        "id": "item 1",
+        "description": "test item 1"
+    }
+                </pre>
+			</td>
+		</tr>
+	</table>
+  </body>
+</html>
