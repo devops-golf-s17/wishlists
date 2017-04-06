@@ -11,3 +11,6 @@ expects==0.8.0
 #Codecoverage
 coverage==4.2
 codecov==2.0.5
+#bdd
+behave==1.2.5
+selenium==3.3.1

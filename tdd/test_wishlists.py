@@ -376,6 +376,31 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 
+		"""
+            This is a test case to check whether an item in a wishlist is deleted
+            DELETE verb checked here.
+        """
+
+		def test_remove_wishlist_item(self):
+			resp = self.app.delete('/wishlists/1/items/item1', content_type='application/json')
+			self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+			self.assertEqual(len(resp.data), 0)
+			respTwo = self.app.get('/wishlists/1/items')
+			all_items_json = json.loads(respTwo.data)
+			self.assertEqual(len(all_items_json), 0)
+
+		"""
+			This is a test case to check whether an nonexist item is deleted
+		"""
+
+		def test_remove_wishlist_nonexist_item(self):
+			resp = self.app.delete('/wishlists/1/items/item5', content_type='application/json')
+			self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+			self.assertEqual(len(resp.data), 0)
+			respTwo = self.app.get('/wishlists/1/items')
+			all_items_json = json.loads(respTwo.data)
+			self.assertEqual(len(all_items_json), 1)
+
 
 if __name__ == '__main__':
 	unittest.main()
