@@ -1,4 +1,4 @@
-  #Test cases can be run with either of the following:
+ #Test cases can be run with either of the following:
  #python -m unittest discover
  #nosetests -v --rednose --nologcapture
  #nosetests --verbosity 2 --with-spec --spec-color
