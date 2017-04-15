@@ -1,8 +1,8 @@
-from flask import flask
+from flask import Flask
 
 
 #Creating the flask app
-application = Flask(__name__)
+app = Flask(__name__)
 
 
 #Load Configurations

@@ -8,14 +8,83 @@ from werkzeug.exceptions import NotFound
 from models import Wishlist
 from . import app
 
-# Error handlers reuire app to be initialized so we must import
+import json
+from datetime import datetime
+# Error handlers require app to be initialized so we must import
 # then only after we have initialized the Flask app instance
 import error_handlers
 
 redis = None
 
 
+@app.route('/')
+def index():
+    #wishlist_url = request.base_url + 'wishlists'
+    #return (jsonify(service='wishlists', version='0.1',
+    #        url=wishlist_url), HTTP_200_OK)
+    return app.send_static_file('index.html')
 
+
+@app.route('/wishlists',methods=['POST'])
+def add_wishlist():
+    """
+    The route for adding new wishlists, specified by userID and name of the wishlist. You can check
+    the POST requests using CURL.
+    Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"name":"Xynazog","user_id":123}' http://127.0.0.1:5000/wishlists
+    H is for headers, X is used to specify HTTP Method, d is used to pass a message.
+    In location headers, if _external set to True, an absolute URL is generated. 
+    """
+    data = request.get_json()
+    if is_valid(data,'wishlist'):
+        wishl = Wishlist()
+        wishl.deserialize_wishlist(data)
+        wishl.save()
+        message = wishl.serialize_wishlist()
+        return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wishl.self_url()})
+    else:
+        message = {'error' : 'Wishlist data was not valid'}
+        return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)    
+
+@app.route('/wishlists', methods=['GET'])
+def wishlists():
+    """
+    The route for accessing all wishlist resources or
+    creating a new wishlist resource via a POST.
+    """
+    wishlistsList = []
+    wishlistsList = Wishlist.all()
+    wishlistsList = [wishlist.serialize_wishlist() for wishlist in wishlistsList]
+    return make_response(json.dumps(wishlistsList, indent=4), status.HTTP_200_OK)
+
+
+@app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
+def read_wishlist(wishlist_id):
+    """
+    The route for reading wishlists, whether one specifically by id
+    or all wishlists when no id is specified.
+    """
+    try:
+        wl = Wishlist.find_or_404(wishlist_id)
+        return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
+    except WishlistException:
+        return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
+
+
+def is_valid(data, type):
+    valid = False
+    try:
+        if type=='wishlist':
+            name=data['name']
+            user_id=data['user_id']
+            valid=True
+        if type=='item':
+            description=data['description']
+            valid=True
+    except KeyError as e:
+        app.logger.warn('Missing parameter: %p', e)
+    except TypeError as e:
+        app.logger.warn('Invalid Content Type: %c', e)
+    return valid
 
 ######################################################################
 # Connect to Redis and catch connection exceptions
@@ -39,7 +108,7 @@ def connect_to_redis(hostname, port, password):
 def inititalize_redis():
     global redis
     redis = None
-    # Get the crdentials from the Bluemix environment
+    # Get the credentials from the Bluemix environment
     if 'VCAP_SERVICES' in os.environ:
         app.logger.info("Using VCAP_SERVICES...")
         VCAP_SERVICES = os.environ['VCAP_SERVICES']
@@ -56,5 +125,6 @@ def inititalize_redis():
     if not redis:
         # if you end up here, redis instance is down.
         app.logger.error('*** FATAL ERROR: Could not connect to the Redis Service')
-    # Have the Pet model use Redis
+    # Have the Wishlist model use Redis
     Wishlist.use_db(redis)
+    
