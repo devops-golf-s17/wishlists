@@ -62,23 +62,29 @@ class Wishlist(object):
             raise DataValidationError('Invalid wishlist: missing ' + ke.args[0])
         except TypeError as te:
             raise DataValidationError('Invalid wishlist: body of request contained bad or no data')
-        return self        
-
-    def deserialize_wishlist(self, data):
-        try:
-        	self.name = data['name']
-        	self.user_id = data['user_id']
-        	if 'items' not in data:
-        		self.items = {}
-        	else:
-        		self.items = data['items']
-        	self.created = str(datetime.utcnow())
-        	self.deleted = self.deleted
-        except KeyError as ke:
-            raise DataValidationError('Invalid wishlist: missing ' + ke.args[0])
-        except TypeError as te:
-            raise DataValidationError('Invalid wishlist: body of request contained bad or no data')
         return self
+
+	def deserialize_wishlist_items(self,data):
+		try:
+			self.name = self.name
+			self.user_id = self.user_id
+			temp_items = self.items
+			if not temp_items:
+				temp_items[1] = {'id':data['id'], 'description':data['description']}
+			else:
+				if data['id'] not in temp_items.values():
+					size = len(temp_items) + 1
+					print "CHECK SIZE"
+					print size
+					temp_items[size] = {'item_id':data['id'], 'description':data['description']}
+					self.items = temp_items
+			self.created = self.created
+			self.deleted = self.deleted
+		except KeyError as ke:
+			raise DataValidationError('Invalid wishlist: missing ' + ke.args[0])
+		except TypeError as te:
+			raise DataValidationError('Invalid wishlist: body of request contained bad or no data')
+		return self
 
 ######################################################################
 #  S T A T I C   D A T A B S E   M E T H O D S
