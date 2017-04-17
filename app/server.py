@@ -82,11 +82,11 @@ def add_item_to_wishlist(wishlist_id):
     data = request.get_json()
     if is_valid(data,'item'):
         try:
-            	wl = Wishlist.find_or_404(wishlist_id)
+        	wl = Wishlist.find_or_404(wishlist_id)
         	wl.deserialize_wishlist_items(data)
-                wl.save_item()
-                message = wl.serialize_wishlist()    
-		return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
+            wl.save_item()
+            message = wl.serialize_wishlist()    
+			return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
         except WishlistException:
             return make_response(jsonify(message='Cannot add a new item %s' % request.json['id']), status.HTTP_400_BAD_REQUEST)
     else:
