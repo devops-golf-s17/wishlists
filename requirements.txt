@@ -14,3 +14,4 @@ codecov==2.0.5
 #bdd
 behave==1.2.5
 selenium==3.3.1
+redis==2.10.5
