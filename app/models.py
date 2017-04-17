@@ -14,7 +14,7 @@ class Wishlist(object):
     __redis = None
     UPDATABLE_WISHLIST_FIELDS = ['user_id', 'name']
     UPDATABLE_ITEM_FIELDS = ['description']
-    def __init__(self,id=0,name=None,user_id=None):
+    def __init__(self,id=0,name=None,user_id=None,items={}):
         """
         Initializes the internal store of wishlist resources.
         """
@@ -22,7 +22,7 @@ class Wishlist(object):
         self.name = name
         self.created = str(datetime.utcnow())
         self.user_id = str(user_id)
-        self.items = None
+        self.items = {}
         self.deleted = False
 
     def self_url(self):
@@ -33,25 +33,11 @@ class Wishlist(object):
             self.id = self.__next_index()
         Wishlist.__redis.set(self.id, pickle.dumps(self.serialize_wishlist()))
 
-    def save_item(self,data):
-        print "Saving item"
-        if data.get('id')==None:
-            raise AttributeError('ID attribute not set!')
-        if data.get('description')==None:
-            raise AttributeError('Description attribute not set')
-        item_id = data.get('id')
-        item_description = data.get('description')
-        wl_serialized = self.serialize_wishlist()
-        x = wl_serialized['items']
-        if x==None:
-        	x = dict()
-        	x[item_id] = item_description
-        else:
-        	x[item_id] = item_description	
-        Wishlist.__redis.set(self.id, pickle.dumps(self.serialize_wishlist_items(x)))   
+    def save_item(self):
+        Wishlist.__redis.set(self.id, pickle.dumps(self.serialize_wishlist()))
 
     def delete(self):
-        Wishlist.__redis.delete(self._index)
+        Wishlist.__redis.delete(self.id)
 
     def __next_index(self):
         return Wishlist.__redis.incr('index')
@@ -59,13 +45,19 @@ class Wishlist(object):
     def serialize_wishlist(self):
         return {"id":self.id, "user_id":self.user_id, "name":self.name, "items":self.items, "created":self.created, "deleted":self.deleted}
 
-    def serialize_wishlist_items(self,item_set):
-    	return {"id":self.id, "user_id":self.user_id, "name":self.name, "items":pickle.dumps(item_set), "created":self.created, "deleted":self.deleted}   
+    def serialize_wishlist_items(self):
+    	return {"id":self.id, "user_id":self.user_id, "name":self.name, "items":self.items, "created":self.created, "deleted":self.deleted}
 
-    def deserialize_wishlist_items(self,item_set):
-        print "Deserialize items"
+    def deserialize_wishlist_items(self,data):
         try:
-            self.items = pickle.dumps(item_set)
+        	self.name = self.name
+        	self.user_id = self.user_id
+        	temp_items = self.items
+        	if data['id'] not in temp_items:	
+            		temp_items[data['id']] = data['description']
+            	self.items = temp_items
+        	self.created = self.created
+        	self.deleted = self.deleted
         except KeyError as ke:
             raise DataValidationError('Invalid wishlist: missing ' + ke.args[0])
         except TypeError as te:
@@ -74,8 +66,14 @@ class Wishlist(object):
 
     def deserialize_wishlist(self, data):
         try:
-            self.name = data['name']
-            self.user_id = data['user_id']
+        	self.name = data['name']
+        	self.user_id = data['user_id']
+        	if 'items' not in data:
+        		self.items = {}
+        	else:
+        		self.items = data['items']
+        	self.created = str(datetime.utcnow())
+        	self.deleted = self.deleted
         except KeyError as ke:
             raise DataValidationError('Invalid wishlist: missing ' + ke.args[0])
         except TypeError as te:
@@ -96,24 +94,22 @@ class Wishlist(object):
 
     @staticmethod
     def all():
+        # results = [Order.from_dict(redis.hgetall(key)) for key in redis.keys() if key != 'index']
         results = []
         for key in Wishlist.__redis.keys():
             if key != 'index':  # filer out our id index
-                data = pickle.loads(Wishlist.__redis.get(key))
-                wl = Wishlist(data['id']).deserialize_wishlist(data)
+            	data = Wishlist.__redis.get(key)
+            	pickled_data = pickle.loads(data)
+            	wl = Wishlist(pickled_data['id']).deserialize_wishlist(pickled_data)
                 results.append(wl)
         return results
 
     @staticmethod
     def find(id):
-    	print "find"
         if Wishlist.__redis.exists(id):
-            data = pickle.loads(Wishlist.__redis.get(id))
-            print "DATA"
-            print data
-            print Wishlist(data['id'])
-            wl = Wishlist(data['id']).deserialize_wishlist(data)
-            return wl
+            	data = pickle.loads(Wishlist.__redis.get(id))
+            	wl = Wishlist(data['id']).deserialize_wishlist(data)
+            	return wl
         else:
             return None
 
