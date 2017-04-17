@@ -38,7 +38,7 @@ def add_wishlist():
     if is_valid(data,'wishlist'):
         wishl = Wishlist()
         wishl.deserialize_wishlist(data)
-        wishl.save()
+        wishl.save_wishlist()
         message = wishl.serialize_wishlist()
         return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wishl.self_url()})
     else:
@@ -53,8 +53,12 @@ def wishlists():
     """
     wishlistsList = []
     wishlistsList = Wishlist.all()
+    print wishlistsList
+    for x in wishlistsList:
+        print x.serialize_wishlist()
     wishlistsList = [wishlist.serialize_wishlist() for wishlist in wishlistsList]
     return make_response(json.dumps(wishlistsList, indent=4), status.HTTP_200_OK)
+
 
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
@@ -68,6 +72,29 @@ def read_wishlist(wishlist_id):
         return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
     except WishlistException:
         return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
+def add_item_to_wishlist(wishlist_id):
+    """
+    The route for adding new items to the wishlist. This method can also be checked using CURL.
+    Pre-requisite: Create a wishlist to add an item.
+    Example: curl -i -H 'Content-Type: application/json' -X POST -d '{"id":"i123","description":"Awesome product!"}' http://127.0.0.1:5000/wishlists/1/items
+    """
+    data = request.get_json()
+    print data
+    if is_valid(data,'item'):
+        try:
+        	wl = Wishlist.find_or_404(wishlist_id)
+        	wl.save_item(data)
+        	message = wl.serialize_wishlist()
+		return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
+        except WishlistException:
+            return make_response(jsonify(message='Cannot add a new item %s' % request.json['id']), status.HTTP_400_BAD_REQUEST)
+    else:
+        message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+        return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+
 
 
 def is_valid(data, type):
