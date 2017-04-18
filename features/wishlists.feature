@@ -27,8 +27,18 @@ Scenario: The wishlists service is running
 
 Scenario: List all wishlists
 	When I visit "wishlists"
-	Then I should see a wishlist with id "1"
-	And I should see a wishlist with id "2"
-	And I should see a wishlist with id "3"
-	
+	Then I should see a wishlist with id "1" and name "wl1"
+	And I should see a wishlist with id "2" and name "wl2"
+	And I should see a wishlist with id "3" and name "wl3"
+    
+Scenario: Deleting a wishlist
+    When I visit "wishlists"
+    Then I should see a wishlist with id "1" and name "wl1"
+    And I should see a wishlist with id "2" and name "wl2"
+    And I should see a wishlist with id "3" and name "wl3"
+    When I delete "wishlists" with id "2"
+    And I visit "wishlists"
+    Then I should see a wishlist with id "1" and name "wl1"
+    And I should not see a wishlist with id "2" and name "wl2"
+    And I should see a wishlist with id "3" and name "wl3"
 
