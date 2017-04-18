@@ -282,7 +282,6 @@ def is_valid(data, type):
 ######################################################################
 # load sample data
 def data_load_wishlist(data):
-    redis.flushall()
     Wishlist().deserialize_wishlist(data).save_wishlist()
 
 # empty the database
@@ -290,7 +289,9 @@ def data_reset():
     redis.flushall()
 
 def data_load_wishlist_items(data):
-	Wishlist(data['wishlist_id']).deserialize_wishlist_items(data).save_item()
+	#data_to_be_sent = {"id":data['id'], "description":data['description']}
+	wl = Wishlist.find_or_404(data['wishlist_id'])
+	wl.deserialize_wishlist_items(data).save_item()
 
 
 
