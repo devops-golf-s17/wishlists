@@ -66,16 +66,39 @@ class Wishlist(object):
 	def remove_item(self, item_id):
 		temp_items = self.items
 		remove_item = None
-		for key,value in temp_items.iteritems():
-			if item_id == value['item_id']:
-				remove_item = temp_items[key]
-				remove_key = key
-		if remove_item:
-			del temp_items[remove_key]
+		if item_id is None:
+			keys = []
+			for key,value in temp_items.iteritems():
+				keys.append(key)
+			for key in keys:
+				temp_items.pop(key)
 			self.items = temp_items
 		else:
-			raise ItemNotFoundException
+			for key,value in temp_items.iteritems():
+				if item_id == value['item_id']:
+					remove_item = temp_items[key]
+					remove_key = key
+			if remove_item:
+				temp_items.pop(remove_key)
+				self.items = temp_items
+			else:
+				raise ItemNotFoundException
 
+	def search_items(self, data):
+		return_items=[]
+		if data['uid']==self.user_id:
+			temp_items = self.items
+			for key,value in temp_items.iteritems():
+				for k2,v2 in value.iteritems():
+					if data['query'] in v2 and value not in return_items:
+						return_items.append(value)
+			if return_items:
+				wl = {'Wishlist ID':self.id, 'Search results':return_items }
+				return wl
+			else:
+				return None
+		else:
+	 		return None
 
 	def delete(self):
 		Wishlist.__redis.delete(self.id)

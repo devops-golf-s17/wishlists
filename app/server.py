@@ -159,9 +159,10 @@ def update_wishlist_item(wishlist_id, item_id):
 	if is_valid(data, 'item'):
 		try:
 			wl = Wishlist.find_or_404(wishlist_id)
-			new_wl = wl.update_item(data)
+			wl.update_item(data)
 			wl.save_wishlist()
-			return make_response(jsonify(new_wl), status.HTTP_200_OK)
+			new_wl = wl.find(wishlist_id)
+			return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
 		except WishlistException:
 			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
 			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
@@ -183,11 +184,65 @@ def remove_wishlist_item(wishlist_id, item_id):
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(item_id)
+		wl.save_wishlist()
 		return make_response('', status.HTTP_204_NO_CONTENT)
 	except ItemException:
 		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
 	except WishlistException:
 		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
+
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
+def clear_wishlist(wishlist_id):
+	"""
+		The route for clearing a wishlist specified by wishlist_id
+		without deleting the wishlist itself.
+	"""
+
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		wl.remove_item(None)
+		wl.save_wishlist()
+		new_wl = wl.find(wishlist_id)
+		return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
+	except WishlistException:
+		message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+		return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+
+
+@app.route('/wishlists/<int:wishlist_id>', methods=['DELETE'])
+def delete_wishlist(wishlist_id):
+	"""
+	The route for deleting a specific wishlist when the wishlist_id is specified.
+	This only does a soft delete, i.e. update the deleted flag with "true"
+	"""
+
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		wl.delete()
+		return make_response('', status.HTTP_204_NO_CONTENT)
+	except WishlistException:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
+
+
+@app.route('/wishlists/search', methods=['GET'])
+def search_wishlists():
+	"""
+	The route for searching items with specific keyword or ID.
+	"""
+
+	data = {}
+	data['query'] = request.args.get('q', None)
+	data['uid'] = request.args.get('user_id',None)
+	wishlists_list = []
+	returned_items = []
+	wishlists_list = Wishlist.all()
+	for wl in wishlists_list:
+		item = wl.search_items(data)
+		if item:
+			returned_items.append(item)
+	return make_response(jsonify(returned_items), status.HTTP_200_OK)
 
 
 def is_valid(data, type):
