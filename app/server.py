@@ -89,6 +89,7 @@ def read_wishlist(wishlist_id):
 	"""
 	The route for reading wishlists, whether one specifically by id
 	or all wishlists when no id is specified.
+	Example: curl http://127.0.0.1:5000/wishlists/1
 	"""
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
@@ -102,6 +103,7 @@ def item(wishlist_id):
 	"""
 	The route for getting all items associated with a wishlist
 	or making a new item for a wishlist via a POST.
+	Example: curl http://127.0.0.1:5000/wishlists/1/items
 	"""
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
@@ -115,6 +117,7 @@ def item(wishlist_id):
 def read_wishlist_item(wishlist_id, item_id):
 	"""
 	The route for retrieving a specific item in a wishlist.
+	Example: curl http://127.0.0.1:5000/wishlists/1/items/i123
 	"""
 
 	try:
@@ -131,6 +134,8 @@ def read_wishlist_item(wishlist_id, item_id):
 def update_wishlist(id):
 	"""
 	The route for modifying a wishlist's user_id or name.
+	Example: curl -i -H 'Content-Type: application/json' -X PUT -d '{"name":"new_name","user_id":110}' http://127.0.0.1:5000/wishlists/1
+	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
 	"""
 	data = request.get_json()
 	if is_valid(data, 'wishlist'):
@@ -151,6 +156,8 @@ def update_wishlist(id):
 def update_wishlist_item(wishlist_id, item_id):
 	"""
 	The route for modifying the description of an item in a specific wishlist.
+	Example: curl -i -H 'Content-Type: application/json' -X PUT -d '{"description":"update product!"}' http://127.0.0.1:5000/wishlists/1/items/i123
+	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
 	"""
 
 	data=request.get_json()
@@ -179,6 +186,7 @@ def remove_wishlist_item(wishlist_id, item_id):
 	"""
 	The route for removing a specific item in a wishlist,
 	given a wishlist_id and the item_id
+	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
 	"""
 
 	try:
@@ -198,6 +206,7 @@ def clear_wishlist(wishlist_id):
 	"""
 		The route for clearing a wishlist specified by wishlist_id
 		without deleting the wishlist itself.
+		Example: curl -X PUT http://127.0.0.1:5000/wishlists/1/items/clear
 	"""
 
 	try:
@@ -216,6 +225,7 @@ def delete_wishlist(wishlist_id):
 	"""
 	The route for deleting a specific wishlist when the wishlist_id is specified.
 	This only does a soft delete, i.e. update the deleted flag with "true"
+	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1
 	"""
 
 	try:
