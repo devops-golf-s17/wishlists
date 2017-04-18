@@ -195,11 +195,45 @@ def remove_wishlist_item(wishlist_id, item_id):
 		wl = Wishlist.find(wishlist_id)
 		if not wl:
 			return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
+
+	data=request.get_json()
+	data['id'] = item_id
+
+	if is_valid(data, 'item'):
+		try:
+			wl = Wishlist.find_or_404(wishlist_id)
+			wl.update_item(data)
+			wl.save_wishlist()
+			new_wl = wl.find(wishlist_id)
+			return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
+		except WishlistException:
+			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+		except ItemException:
+			message = { 'error' : 'Item %s was not found' % item_id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+	else:
+		message = {'error' : 'Item data was not valid'}
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
+def remove_wishlist_item(wishlist_id, item_id):
+	"""
+	The route for removing a specific item in a wishlist,
+	given a wishlist_id and the item_id
+	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
+	"""
+
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(item_id)
 		wl.save_wishlist()
 		return make_response('', status.HTTP_204_NO_CONTENT)
 	except ItemException:
 		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
+	except WishlistException:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 
 
 
@@ -249,8 +283,8 @@ def search_wishlists():
 	data = {}
 	data['query'] = request.args.get('q', None)
 	data['uid'] = request.args.get('user_id',None)
-	if data['query'] is None and data['uid'] is None:
-		return make_response(jsonify("Error: Include query or userid"), status.HTTP_400_BAD_REQUEST)
+	if data['uid'] is None:
+		return make_response(jsonify("Error: userid is missing"), status.HTTP_400_BAD_REQUEST)
 	wishlists_list = []
 	returned_items = []
 	wishlists_list = Wishlist.all()
@@ -281,13 +315,23 @@ def is_valid(data, type):
 		app.logger.warn('Invalid Content Type: %c', e)
 	return valid
 
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
+######################################################################
 # load sample data
-def data_load(data):
-	Wishlist().deserialize_wishlist(data).save_wishlist()
+def data_load_wishlist(data):
+    Wishlist().deserialize_wishlist(data).save_wishlist()
 
 # empty the database
 def data_reset():
-	Wishlist.remove_all()
+    redis.flushall()
+
+def data_load_wishlist_items(data):
+	#data_to_be_sent = {"id":data['id'], "description":data['description']}
+	wl = Wishlist.find_or_404(data['wishlist_id'])
+	wl.deserialize_wishlist_items(data).save_item()
+
 
 ######################################################################
 # Connect to Redis and catch connection exceptions
@@ -308,7 +352,9 @@ def connect_to_redis(hostname, port, password):
 #   2) With Redis running on the local server as with Travis CI
 #   3) With Redis --link ed in a Docker container called 'redis'
 ######################################################################
-def initialize_redis():
+
+def inititalize_redis():
+
 	global redis
 	redis = None
 	# Get the credentials from the Bluemix environment

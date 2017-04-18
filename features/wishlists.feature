@@ -5,7 +5,7 @@ Feature: The wishlists service back-end
 
 
 Background:
-
+    Given the server is started
     Given the following wishlists
         | id | name       | user_id |
         |  1 | wl1        | user1   |
@@ -17,10 +17,18 @@ Background:
         | item1   | 1           | test item 1 |
         | item2   | 1           | test item 2 |
         | item3   | 2           | test item 3 |
-
+    
 
 Scenario: The wishlists service is running
     When I visit the "home page"
     Then I should see "Wishlists REST API Service"
     Then I should not see "404 Not Found"
+
+
+Scenario: List all wishlists
+	When I visit "wishlists"
+	Then I should see a wishlist with id "1"
+	And I should see a wishlist with id "2"
+	And I should see a wishlist with id "3"
+	
 
