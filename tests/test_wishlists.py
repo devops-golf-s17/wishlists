@@ -4,11 +4,13 @@
  #nosetests --verbosity 2 --with-spec --spec-color
  #To check coverage:
  #coverage run --omit "venv/*" test_wishlists.py
- #coverage report -m --include= wishlists.py
+ #coverage report -m --include= /vagrant/app/server.py
 
 import json
 import unittest
 import logging
+import sys
+sys.path.insert(0, '/vagrant/')
 from app import server
 from flask_api import status
 
@@ -22,7 +24,7 @@ class WishlistTestCase(unittest.TestCase):
 		self.app = server.app.test_client()
 		server.initialize_redis()
 		server.data_reset()
-		server.data_load({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"id": "i1", "description": "test item 1"}}})
+		server.data_load({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"item_id": "item1", "description": "test item 1"}}})
 
 	"""
 		This test case checks the index method.
@@ -84,8 +86,6 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.get('/wishlists/1/items/item1')
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 		data = json.loads(resp.data)
-		print "!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		print data
 		self.assertEqual(data['description'], 'test item 1')
 
 	"""
@@ -137,11 +137,11 @@ class WishlistTestCase(unittest.TestCase):
 		#Checking number of items - 2 items 'cause one is created.
 		respTwo = self.app.get('/wishlists/1/items')
 		dataTwo = json.loads(respTwo.data)
-		self.assertEqual(len(dataTwo['items']),2)
+		self.assertEqual(len(dataTwo),2)
 		new_error_item = {'id':'item4'}
 		data = json.dumps(new_error_item)
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
-		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 		
 
 	"""
@@ -246,7 +246,7 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.put('/wishlists/1/items/item1', data=data, content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_200_OK )
 		new_json = json.loads(resp.data)
-		self.assertEqual (new_json['items']['item1']['description'], 'test update')
+		self.assertEqual (new_json['items']['1']['description'], 'test update')
 
 	"""
 		This is a test case to check whether an error is returned when empty data is sent for an item.
