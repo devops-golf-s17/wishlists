@@ -35,7 +35,6 @@ def step_impl(context, url):
     context.resp = context.app.get(url)
     assert context.resp.status_code == 200
 
-
 @when(u'I retrieve "{url}" with id "{id}"')
 def step_impl(context, url, id):
     target_url = '/{}/{}'.format(url, id)
