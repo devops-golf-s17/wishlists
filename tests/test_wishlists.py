@@ -24,7 +24,7 @@ class WishlistTestCase(unittest.TestCase):
 		self.app = server.app.test_client()
 		server.initialize_redis()
 		server.data_reset()
-		server.data_load({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"item_id": "item1", "description": "test item 1"}}})
+		server.data_load_wishlist({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"item_id": "item1", "description": "test item 1"}}})
 
 	"""
 		This test case checks the index method.
@@ -234,6 +234,14 @@ class WishlistTestCase(unittest.TestCase):
 	def test_search_not_in_wishlists(self):
 		resp = self.app.get('/wishlists/search?q=Random&user_id=user1')
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+	"""
+	This is a testcase to search an object not present in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_with_no_userid(self):
+		resp = self.app.get('/wishlists/search?q=Random')
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
 	"""
 		This is a test case to check whether an item is updated.

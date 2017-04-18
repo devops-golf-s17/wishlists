@@ -190,51 +190,16 @@ def remove_wishlist_item(wishlist_id, item_id):
 	given a wishlist_id and the item_id
 	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
 	"""
-
+	wl = Wishlist.find(wishlist_id)
+	if not wl:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 	try:
-		wl = Wishlist.find(wishlist_id)
-		if not wl:
-			return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
-
-	data=request.get_json()
-	data['id'] = item_id
-
-	if is_valid(data, 'item'):
-		try:
-			wl = Wishlist.find_or_404(wishlist_id)
-			wl.update_item(data)
-			wl.save_wishlist()
-			new_wl = wl.find(wishlist_id)
-			return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
-		except WishlistException:
-			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
-			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
-		except ItemException:
-			message = { 'error' : 'Item %s was not found' % item_id }
-			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
-	else:
-		message = {'error' : 'Item data was not valid'}
-		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
-
-
-@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
-def remove_wishlist_item(wishlist_id, item_id):
-	"""
-	The route for removing a specific item in a wishlist,
-	given a wishlist_id and the item_id
-	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
-	"""
-
-	try:
-		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(item_id)
 		wl.save_wishlist()
 		return make_response('', status.HTTP_204_NO_CONTENT)
 	except ItemException:
-		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
-	except WishlistException:
-		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
-
+		message = { 'error' : 'Item %s was not found' % item_id }
+		return make_response(jsonify(message), status.HTTP_204_NO_CONTENT)
 
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
@@ -264,12 +229,12 @@ def delete_wishlist(wishlist_id):
 	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1
 	"""
 
-	try:
-		wl = Wishlist.find(wishlist_id)
-		if wl:
-			wl.delete()
+
+	wl = Wishlist.find(wishlist_id)
+	if wl:
+		wl.delete()
 		return make_response('', status.HTTP_204_NO_CONTENT)
-	except WishlistException:
+	else:
 		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 
 
@@ -353,7 +318,7 @@ def connect_to_redis(hostname, port, password):
 #   3) With Redis --link ed in a Docker container called 'redis'
 ######################################################################
 
-def inititalize_redis():
+def initialize_redis():
 
 	global redis
 	redis = None
