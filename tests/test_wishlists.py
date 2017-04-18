@@ -84,6 +84,8 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.get('/wishlists/1/items/item1')
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 		data = json.loads(resp.data)
+		print "!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		print data
 		self.assertEqual(data['description'], 'test item 1')
 
 	"""
@@ -131,11 +133,11 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		new_json = json.loads(resp.data)
-		self.assertEqual(new_json['1']['id'],'item3')
+		self.assertEqual(new_json['items']['2']['item_id'],'item3')
 		#Checking number of items - 2 items 'cause one is created.
 		respTwo = self.app.get('/wishlists/1/items')
 		dataTwo = json.loads(respTwo.data)
-		self.assertEqual(len(dataTwo['1']),2)
+		self.assertEqual(len(dataTwo['items']),2)
 		new_error_item = {'id':'item4'}
 		data = json.dumps(new_error_item)
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
