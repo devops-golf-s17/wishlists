@@ -4,33 +4,36 @@
  #nosetests --verbosity 2 --with-spec --spec-color
  #To check coverage:
  #coverage run --omit "venv/*" test_wishlists.py
- #coverage report -m --include= wishlists.py
+ #coverage report -m --include= /vagrant/app/server.py
 
 import json
 import unittest
 import logging
-import wishlists
-from persistence import db, DatabaseEngine
+import sys
+sys.path.insert(0, '/vagrant/')
+from app import server
 from flask_api import status
 
 class WishlistTestCase(unittest.TestCase):
-	def setUp(self):
-		wishlists.db.create_wishlist('wl1','user1')
-		wishlists.db.add_item(1, {'id' : 'item1', 'description' : 'test item 1'})
-		self.db = wishlists.db
-		self.app = wishlists.app.test_client()
 
-	def tearDown(self):
-		wishlists.db=DatabaseEngine()
+	def setUp(self):
+		server.app.debug = True
+		server.app.logger.addHandler(logging.StreamHandler())
+		server.app.logger.setLevel(logging.CRITICAL)
+
+		self.app = server.app.test_client()
+		server.initialize_redis()
+		server.data_reset()
+		server.data_load_wishlist({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"item_id": "item1", "description": "test item 1"}}})
 
 	"""
 		This test case checks the index method.
 	"""
 
 	def test_index(self):
- 		resp = self.app.get('/')
-		self.assertEqual( resp.status_code, status.HTTP_200_OK )
-		self.assertTrue ('Wishlists REST API Service' in resp.data)
+		resp = self.app.get('/')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		self.assertTrue('Wishlists REST API Service' in resp.data)
 
 	"""
 		This is a test case to check whether all wishlists are returned.
@@ -130,15 +133,15 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		new_json = json.loads(resp.data)
-		self.assertEqual(new_json['id'],'item3')
+		self.assertEqual(new_json['items']['2']['item_id'],'item3')
 		#Checking number of items - 2 items 'cause one is created.
 		respTwo = self.app.get('/wishlists/1/items')
 		dataTwo = json.loads(respTwo.data)
-		self.assertEqual(len(dataTwo['1']),2)
+		self.assertEqual(len(dataTwo),2)
 		new_error_item = {'id':'item4'}
 		data = json.dumps(new_error_item)
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
-		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 		
 
 	"""
@@ -149,7 +152,7 @@ class WishlistTestCase(unittest.TestCase):
 		new_item = {'id':'item3','description':'test item 3'}
 		data = json.dumps(new_item)
 		resp = self.app.post('/wishlists/3/items',data=data,content_type='application/json')
-		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
 		This is a test case to check whether a wishlist is updated.
@@ -233,6 +236,14 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
+	This is a testcase to search an object not present in the users wishlist.
+	GET verb checked here.
+	"""
+	def test_search_with_no_userid(self):
+		resp = self.app.get('/wishlists/search?q=Random')
+		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+	"""
 		This is a test case to check whether an item is updated.
 		PUT verb checked here.
 	"""
@@ -243,7 +254,7 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.put('/wishlists/1/items/item1', data=data, content_type='application/json')
 		self.assertEqual( resp.status_code, status.HTTP_200_OK )
 		new_json = json.loads(resp.data)
-		self.assertEqual (new_json['items']['item1']['description'], 'test update')
+		self.assertEqual (new_json['items']['1']['description'], 'test update')
 
 	"""
 		This is a test case to check whether an error is returned when empty data is sent for an item.
@@ -317,9 +328,9 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
 
 	"""
-        This is a test case to check whether a wishlist is deleted.
-        DELETE verb checked here.
-    """
+		This is a test case to check whether a wishlist is deleted.
+		DELETE verb checked here.
+	"""
 
 	def test_delete_wishlist(self):
 		resp = self.app.delete('/wishlists/1', content_type='application/json')
@@ -330,9 +341,9 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(len(all_wishlists_json), 0)
 
 	"""
-        This is a test case to check whether a message is response when a nonexistent wishlist is deleted
-        DELETE verb checked here.
-    """
+		This is a test case to check whether a message is response when a nonexistent wishlist is deleted
+		DELETE verb checked here.
+	"""
 
 	def test_delete_wishlist_nonexist(self):
 		resp = self.app.delete('/wishlists/5', content_type='application/json')

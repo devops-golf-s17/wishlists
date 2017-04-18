@@ -1,7 +1,7 @@
 import pickle
 from flask import url_for
 from werkzeug.exceptions import NotFound
-from custom_exceptions import DataValidationError, ItemNotFoundException
+from custom_exceptions import DataValidationError, ItemNotFoundException, WishlistNotFoundException
 import json
 from datetime import datetime
 import pickle
@@ -188,5 +188,5 @@ class Wishlist(object):
 	def find_or_404(id):
 		wishlist = Wishlist.find(id)
 		if not wishlist:
-			raise NotFound("Wishlist with id '{}' was not found".format(id))
+			raise WishlistNotFoundException
 		return wishlist
