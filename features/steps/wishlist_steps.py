@@ -26,5 +26,3 @@ def step_impl(context):
 @given(u'the following items')
 def step_impl(context):
     raise NotImplementedError(u'STEP: Given the following items')
-
-	
