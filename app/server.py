@@ -275,6 +275,26 @@ def is_valid(data, type):
 		app.logger.warn('Invalid Content Type: %c', e)
 	return valid
 
+
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
+######################################################################
+# load sample data
+def data_load_wishlist(data):
+    Wishlist().deserialize_wishlist(data).save_wishlist()
+
+# empty the database
+def data_reset():
+    redis.flushall()
+
+def data_load_wishlist_items(data):
+	#data_to_be_sent = {"id":data['id'], "description":data['description']}
+	wl = Wishlist.find_or_404(data['wishlist_id'])
+	wl.deserialize_wishlist_items(data).save_item()
+
+
+
 ######################################################################
 # Connect to Redis and catch connection exceptions
 ######################################################################

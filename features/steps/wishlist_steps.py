@@ -6,7 +6,18 @@ from app import server
 def step_impl(context):
 	context.app = server.app.test_client()
 	context.server = server
-	
+
+@given(u'the following wishlists')
+def step_impl(context):
+    server.data_reset()
+    for row in context.table:
+    	server.data_load_wishlist({"name": row['name'], "id": row['id'], "user_id": row['user_id']})
+
+@given(u'the following items')
+def step_impl(context):
+	for row in context.table:
+		server.data_load_wishlist_items({"id": row['item_id'], "wishlist_id": row['wishlist_id'], "description": row['description']})	
+
 @when(u'I visit the "home page"')
 def step_impl(context):
     context.resp = context.app.get('/')
@@ -19,10 +30,11 @@ def step_impl(context, message):
 def step_impl(context, message):
     assert message not in context.resp.data
 
-@given(u'the following wishlists')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Given the following wishlists')
+@when(u'I visit "{url}"')
+def step_impl(context, url):
+    context.resp = context.app.get(url)
+    assert context.resp.status_code == 200
 
-@given(u'the following items')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Given the following items')
+@then(u'I should see a wishlist with id "{id}"')
+def step_impl(context, id):
+    assert id in context.resp.data
