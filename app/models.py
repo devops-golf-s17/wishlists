@@ -1,7 +1,7 @@
 import pickle
 from flask import url_for
 from werkzeug.exceptions import NotFound
-from custom_exceptions import DataValidationError
+from custom_exceptions import DataValidationError, ItemNotFoundException
 import json
 from datetime import datetime
 import pickle
@@ -36,6 +36,73 @@ class Wishlist(object):
 	def save_item(self):
 		Wishlist.__redis.set(self.id, pickle.dumps(self.serialize_wishlist()))
 
+	def all_items(self):
+		return self.items
+
+	def find_item(self, item_id):
+		temp_items = self.items
+		return_item = None
+		for key,value in temp_items.iteritems():
+			if item_id == value['item_id']:
+				return_item = temp_items[key]
+		if return_item:
+			return return_item
+		else:
+			raise ItemNotFoundException
+
+	def update_item(self, data):
+		temp_items = self.items
+		update_item = None
+		for key,value in temp_items.iteritems():
+			if data['id'] == value['item_id']:
+				update_item = temp_items[key]
+		if update_item:
+			update_item['description'] = data['description']
+			self.items = temp_items
+			return self.serialize_wishlist()
+		else:
+			raise ItemNotFoundException
+
+	def remove_item(self, item_id):
+		temp_items = self.items
+		remove_item = None
+		if item_id is None:
+			keys = []
+			for key,value in temp_items.iteritems():
+				keys.append(key)
+			for key in keys:
+				temp_items.pop(key)
+			self.items = temp_items
+		else:
+			for key,value in temp_items.iteritems():
+				if item_id == value['item_id']:
+					remove_item = temp_items[key]
+					remove_key = key
+			if remove_item:
+				temp_items.pop(remove_key)
+				self.items = temp_items
+			else:
+				raise ItemNotFoundException
+
+	def search_items(self, data):
+		return_items=[]
+		if data['uid']==self.user_id or data['uid'] is None:
+			temp_items = self.items
+			for key,value in temp_items.iteritems():
+				if data['query'] is None:
+					return_items.append(value)
+				else:
+					for k2,v2 in value.iteritems():
+						if data['query'] in v2 and value not in return_items:
+							return_items.append(value)
+			if return_items:
+				wl = {'Wishlist ID':self.id, 'Search results':return_items }
+				return wl
+			else:
+				return None
+		else:
+	 		return None
+
 	def delete(self):
 		Wishlist.__redis.delete(self.id)
 
@@ -53,9 +120,13 @@ class Wishlist(object):
 			self.name = self.name
 			self.user_id = self.user_id
 			temp_items = self.items
-			if data['id'] not in temp_items:	
-				temp_items[data['id']] = data['description']
-				self.items = temp_items
+			if not temp_items:
+				temp_items[1] = {'item_id':data['id'], 'description':data['description']}
+			else:
+				if data['id'] not in temp_items.values():
+					size = len(temp_items) + 1
+					temp_items[size] = {'item_id':data['id'], 'description':data['description']}
+					self.items = temp_items
 			self.created = self.created
 			self.deleted = self.deleted
 		except KeyError as ke:
@@ -69,7 +140,7 @@ class Wishlist(object):
 			self.name = data['name']
 			self.user_id = data['user_id']
 			if 'items' not in data:
-				self.items = {}
+				self.items = self.items
 			else:
 				self.items = data['items']
 			self.created = str(datetime.utcnow())
@@ -94,7 +165,6 @@ class Wishlist(object):
 
 	@staticmethod
 	def all():
-		# results = [Order.from_dict(redis.hgetall(key)) for key in redis.keys() if key != 'index']
 		results = []
 		for key in Wishlist.__redis.keys():
 			if key != 'index':  # filer out our id index

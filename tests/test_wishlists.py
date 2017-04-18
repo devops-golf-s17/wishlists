@@ -13,15 +13,17 @@ from app import server
 from flask_api import status
 
 class WishlistTestCase(unittest.TestCase):
+
 	def setUp(self):
 		server.app.debug = True
 		server.app.logger.addHandler(logging.StreamHandler())
 		server.app.logger.setLevel(logging.CRITICAL)
 
 		self.app = server.app.test_client()
-		server.inititalize_redis()
+		#server.connect_to_redis('redis', 6379, None)
+		server.initialize_redis()
 		server.data_reset()
-		server.data_load({"id": "WL1", "user_id": "User1", "items": {"1": {"id": "i1", "description": "test item 1"}, "2": {"id": "i3", "description": "test item 2"}}})
+		server.data_load({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"id": "i1", "description": "test item 1"}}})
 
 	"""
 		This test case checks the index method.
@@ -29,8 +31,8 @@ class WishlistTestCase(unittest.TestCase):
 
 	def test_index(self):
 		resp = self.app.get('/')
-		self.assertEqual( resp.status_code, status.HTTP_200_OK )
-		self.assertTrue ('Wishlists REST API Service' in resp.data)
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		self.assertTrue('Wishlists REST API Service' in resp.data)
 
 	"""
 		This is a test case to check whether all wishlists are returned.
@@ -130,7 +132,7 @@ class WishlistTestCase(unittest.TestCase):
 		resp = self.app.post('/wishlists/1/items',data=data,content_type='application/json')
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		new_json = json.loads(resp.data)
-		self.assertEqual(new_json['id'],'item3')
+		self.assertEqual(new_json['1']['id'],'item3')
 		#Checking number of items - 2 items 'cause one is created.
 		respTwo = self.app.get('/wishlists/1/items')
 		dataTwo = json.loads(respTwo.data)
@@ -149,7 +151,7 @@ class WishlistTestCase(unittest.TestCase):
 		new_item = {'id':'item3','description':'test item 3'}
 		data = json.dumps(new_item)
 		resp = self.app.post('/wishlists/3/items',data=data,content_type='application/json')
-		self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 	"""
 		This is a test case to check whether a wishlist is updated.

@@ -5,6 +5,7 @@ from redis.exceptions import ConnectionError
 from flask import Flask, Response, jsonify, request, json, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
+from custom_exceptions import WishlistException, ItemException
 from models import Wishlist
 from . import app
 
@@ -43,32 +44,7 @@ def add_wishlist():
 		return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wishl.self_url()})
 	else:
 		message = {'error' : 'Wishlist data was not valid'}
-		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)    
-
-@app.route('/wishlists', methods=['GET'])
-def wishlists():
-	"""
-	The route for accessing all wishlist resources or
-	creating a new wishlist resource via a POST.
-	"""
-	wishlistsList = []
-	wishlistsList = Wishlist.all()
-	wishlistsList = [wishlist.serialize_wishlist() for wishlist in wishlistsList]
-	return make_response(json.dumps(wishlistsList, indent=4), status.HTTP_200_OK)
-
-
-
-@app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
-def read_wishlist(wishlist_id):
-	"""
-	The route for reading wishlists, whether one specifically by id
-	or all wishlists when no id is specified.
-	"""
-	try:
-		wl = Wishlist.find_or_404(wishlist_id)
-		return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
-	except WishlistException:
-		return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)   
 
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
@@ -88,11 +64,204 @@ def add_item_to_wishlist(wishlist_id):
 			message = wl.serialize_wishlist()    
 			return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
 		except WishlistException:
-			return make_response(jsonify(message='Cannot add a new item %s' % request.json['id']), status.HTTP_400_BAD_REQUEST)
+			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
 	else:
+		message = {'error' : 'Item data was not valid'}
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
+		
+
+
+@app.route('/wishlists', methods=['GET'])
+def wishlists():
+	"""
+	The route for accessing all wishlist resources or
+	creating a new wishlist resource via a POST.
+	"""
+	wishlistsList = []
+	wishlistsList = Wishlist.all()
+	wishlistsList = [wishlist.serialize_wishlist() for wishlist in wishlistsList]
+	return make_response(json.dumps(wishlistsList, indent=4), status.HTTP_200_OK)
+
+
+@app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
+def read_wishlist(wishlist_id):
+	"""
+	The route for reading wishlists, whether one specifically by id
+	or all wishlists when no id is specified.
+	Example: curl http://127.0.0.1:5000/wishlists/1
+	"""
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
+	except WishlistException:
+		return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items', methods=['GET'])
+def item(wishlist_id):
+	"""
+	The route for getting all items associated with a wishlist
+	or making a new item for a wishlist via a POST.
+	Example: curl http://127.0.0.1:5000/wishlists/1/items
+	"""
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		items = wl.all_items()
+		return make_response(jsonify(items), status.HTTP_200_OK)
+	except WishlistException:
+		return make_response(jsonify(message='Cannot retrieve wishlist with id %s' % wishlist_id), status.HTTP_404_NOT_FOUND)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
+def read_wishlist_item(wishlist_id, item_id):
+	"""
+	The route for retrieving a specific item in a wishlist.
+	Example: curl http://127.0.0.1:5000/wishlists/1/items/i123
+	"""
+
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		item = wl.find_item(item_id)
+		return make_response(jsonify(item), status.HTTP_200_OK)
+	except ItemException:
+		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_404_NOT_FOUND)
+	except WishlistException:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_404_NOT_FOUND)
+
+
+@app.route('/wishlists/<int:id>', methods=['PUT'])
+def update_wishlist(id):
+	"""
+	The route for modifying a wishlist's user_id or name.
+	Example: curl -i -H 'Content-Type: application/json' -X PUT -d '{"name":"new_name","user_id":110}' http://127.0.0.1:5000/wishlists/1
+	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
+	"""
+	data = request.get_json()
+	if is_valid(data, 'wishlist'):
+		try:
+			wl = Wishlist.find_or_404(id)
+			wl.deserialize_wishlist(data)
+			wl.save_wishlist()
+			return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
+		except WishlistException:
+			message = { 'error' : 'Wishlist %s was not found' % id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+	else:
+		message = {'error' : 'Wishlist data was not valid'}
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
+def update_wishlist_item(wishlist_id, item_id):
+	"""
+	The route for modifying the description of an item in a specific wishlist.
+	Example: curl -i -H 'Content-Type: application/json' -X PUT -d '{"description":"update product!"}' http://127.0.0.1:5000/wishlists/1/items/i123
+	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
+	"""
+	try:
+		data=request.get_json()
+		data['id'] = item_id
+	except TypeError:
+		( jsonify("Invalid input data type"), status.HTTP_400_BAD_REQUEST )
+
+	if is_valid(data, 'item'):
+		try:
+			wl = Wishlist.find_or_404(wishlist_id)
+			wl.update_item(data)
+			wl.save_wishlist()
+			new_wl = wl.find(wishlist_id)
+			return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
+		except WishlistException:
+			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+		except ItemException:
+			message = { 'error' : 'Item %s was not found' % item_id }
+			return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
+	else:
+		message = {'error' : 'Item data was not valid'}
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
+def remove_wishlist_item(wishlist_id, item_id):
+	"""
+	The route for removing a specific item in a wishlist,
+	given a wishlist_id and the item_id
+	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
+	"""
+
+	try:
+		wl = Wishlist.find(wishlist_id)
+		if not wl:
+			return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
+		wl.remove_item(item_id)
+		wl.save_wishlist()
+		return make_response('', status.HTTP_204_NO_CONTENT)
+	except ItemException:
+		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
+
+
+
+@app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
+def clear_wishlist(wishlist_id):
+	"""
+		The route for clearing a wishlist specified by wishlist_id
+		without deleting the wishlist itself.
+		Example: curl -X PUT http://127.0.0.1:5000/wishlists/1/items/clear
+	"""
+
+	try:
+		wl = Wishlist.find_or_404(wishlist_id)
+		wl.remove_item(None)
+		wl.save_wishlist()
+		new_wl = wl.find(wishlist_id)
+		return make_response(jsonify(new_wl.serialize_wishlist()), status.HTTP_200_OK)
+	except WishlistException:
 		message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
 		return make_response(jsonify(message), status.HTTP_404_NOT_FOUND)
 
+
+@app.route('/wishlists/<int:wishlist_id>', methods=['DELETE'])
+def delete_wishlist(wishlist_id):
+	"""
+	The route for deleting a specific wishlist when the wishlist_id is specified.
+	This only does a soft delete, i.e. update the deleted flag with "true"
+	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1
+	"""
+
+	try:
+		wl = Wishlist.find(wishlist_id)
+		if wl:
+			wl.delete()
+		return make_response('', status.HTTP_204_NO_CONTENT)
+	except WishlistException:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
+
+
+@app.route('/wishlists/search', methods=['GET'])
+def search_wishlists():
+	"""
+	The route for searching items with specific keyword or ID.
+	http://0.0.0.0:5000/wishlists/search?q=Apple&user_id=123
+	"""
+
+	data = {}
+	data['query'] = request.args.get('q', None)
+	data['uid'] = request.args.get('user_id',None)
+	if data['query'] is None and data['uid'] is None:
+		return make_response(jsonify("Error: Include query or userid"), status.HTTP_400_BAD_REQUEST)
+	wishlists_list = []
+	returned_items = []
+	wishlists_list = Wishlist.all()
+	for wl in wishlists_list:
+		item = wl.search_items(data)
+		if item:
+			returned_items.append(item)
+	if returned_items:
+		return make_response(jsonify(returned_items), status.HTTP_200_OK)
+	else:
+		return make_response(jsonify("No results found."), status.HTTP_404_NOT_FOUND)
 
 
 def is_valid(data, type):
@@ -103,6 +272,7 @@ def is_valid(data, type):
 			user_id=data['user_id']
 			valid=True
 		if type=='item':
+			id = data['id']
 			description=data['description']
 			valid=True
 	except KeyError as e:
@@ -113,11 +283,11 @@ def is_valid(data, type):
 
 # load sample data
 def data_load(data):
-	Wishlist().deserialize_wishlist(data).save()
+	Wishlist().deserialize_wishlist(data).save_wishlist()
 
 # empty the database
 def data_reset():
-	redis.flushall()
+	Wishlist.remove_all()
 
 ######################################################################
 # Connect to Redis and catch connection exceptions
@@ -138,7 +308,7 @@ def connect_to_redis(hostname, port, password):
 #   2) With Redis running on the local server as with Travis CI
 #   3) With Redis --link ed in a Docker container called 'redis'
 ######################################################################
-def inititalize_redis():
+def initialize_redis():
 	global redis
 	redis = None
 	# Get the credentials from the Bluemix environment
@@ -160,4 +330,3 @@ def inititalize_redis():
 		app.logger.error('*** FATAL ERROR: Could not connect to the Redis Service')
 	# Have the Wishlist model use Redis
 	Wishlist.use_db(redis)
-	
