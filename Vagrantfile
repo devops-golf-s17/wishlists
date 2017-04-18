@@ -70,7 +70,6 @@ Vagrant.configure(2) do |config|
     sudo pip install -r requirements.txt 
   SHELL
 
-    ######################################################################
   # Add Redis docker container
   ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
