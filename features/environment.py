@@ -1,6 +1,8 @@
 from behave import *
-import wishlists
-from persistence import db, DatabaseEngine
-
+import sys
+sys.path.insert(0, '/vagrant/')
+from app import server
 def before_all(context):
-	context.app = wishlists.app.test_client()
+	context.app = server.app.test_client()
+	server.inititalize_redis()
+        context.server = server
