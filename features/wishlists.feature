@@ -30,5 +30,11 @@ Scenario: List all wishlists
 	Then I should see a wishlist with id "1"
 	And I should see a wishlist with id "2"
 	And I should see a wishlist with id "3"
-	
+
+Scenario: Get a wishlist with given id
+    When I visit "wishlists/1"
+    Then I should see a wishlist with id "1"
+    And I should see "user1" in this wishlist
+
+
 
