@@ -30,5 +30,9 @@ Scenario: List all wishlists
 	Then I should see a wishlist with id "1"
 	And I should see a wishlist with id "2"
 	And I should see a wishlist with id "3"
-	
+
+Scenario: Get a wishlist with given id
+    when I retrieve "wishlists" with id "1"
+    Then I should see "user1" in this wishlist
+    Then I should not see "404 Not Found"
 
