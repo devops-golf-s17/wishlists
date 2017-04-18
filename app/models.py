@@ -86,7 +86,8 @@ class Wishlist(object):
 
 	def search_items(self, data):
 		return_items=[]
-		if data['uid']==self.user_id or data['uid'] is None:
+		#If no data is present, returning all the products of the user.
+		if data['uid']==self.user_id:
 			temp_items = self.items
 			for key,value in temp_items.iteritems():
 				if data['query'] is None:
