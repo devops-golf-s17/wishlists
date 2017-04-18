@@ -246,8 +246,8 @@ def search_wishlists():
 	data = {}
 	data['query'] = request.args.get('q', None)
 	data['uid'] = request.args.get('user_id',None)
-	if data['query'] is None and data['uid'] is None:
-		return make_response(jsonify("Error: Include query or userid"), status.HTTP_400_BAD_REQUEST)
+	if data['uid'] is None:
+		return make_response(jsonify("Error: userid is missing"), status.HTTP_400_BAD_REQUEST)
 	wishlists_list = []
 	returned_items = []
 	wishlists_list = Wishlist.all()
