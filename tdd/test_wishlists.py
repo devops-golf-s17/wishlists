@@ -9,26 +9,26 @@
 import json
 import unittest
 import logging
-import wishlists
-from persistence import db, DatabaseEngine
+from app import server
 from flask_api import status
 
 class WishlistTestCase(unittest.TestCase):
 	def setUp(self):
-		wishlists.db.create_wishlist('wl1','user1')
-		wishlists.db.add_item(1, {'id' : 'item1', 'description' : 'test item 1'})
-		self.db = wishlists.db
-		self.app = wishlists.app.test_client()
+		server.app.debug = True
+		server.app.logger.addHandler(logging.StreamHandler())
+		server.app.logger.setLevel(logging.CRITICAL)
 
-	def tearDown(self):
-		wishlists.db=DatabaseEngine()
+		self.app = server.app.test_client()
+		server.inititalize_redis()
+		server.data_reset()
+		server.data_load({"id": "WL1", "user_id": "User1", "items": {"1": {"id": "i1", "description": "test item 1"}, "2": {"id": "i3", "description": "test item 2"}}})
 
 	"""
 		This test case checks the index method.
 	"""
 
 	def test_index(self):
- 		resp = self.app.get('/')
+		resp = self.app.get('/')
 		self.assertEqual( resp.status_code, status.HTTP_200_OK )
 		self.assertTrue ('Wishlists REST API Service' in resp.data)
 
@@ -317,9 +317,9 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual( resp.status_code, status.HTTP_404_NOT_FOUND )
 
 	"""
-        This is a test case to check whether a wishlist is deleted.
-        DELETE verb checked here.
-    """
+		This is a test case to check whether a wishlist is deleted.
+		DELETE verb checked here.
+	"""
 
 	def test_delete_wishlist(self):
 		resp = self.app.delete('/wishlists/1', content_type='application/json')
@@ -330,9 +330,9 @@ class WishlistTestCase(unittest.TestCase):
 		self.assertEqual(len(all_wishlists_json), 0)
 
 	"""
-        This is a test case to check whether a message is response when a nonexistent wishlist is deleted
-        DELETE verb checked here.
-    """
+		This is a test case to check whether a message is response when a nonexistent wishlist is deleted
+		DELETE verb checked here.
+	"""
 
 	def test_delete_wishlist_nonexist(self):
 		resp = self.app.delete('/wishlists/5', content_type='application/json')
