@@ -19,10 +19,11 @@ def step_impl(context, message):
 def step_impl(context, message):
     assert message not in context.resp.data
 
-@given(u'the following wishlists')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Given the following wishlists')
+@when(u'I visit "{url}"')
+def step_impl(context, url):
+    context.resp = context.app.get(url)
+    assert context.resp.status_code == 200
 
-@given(u'the following items')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Given the following items')
+@then(u'I should see a wishlist with id "{id}"')
+def step_impl(context, id):
+    assert id in context.resp.data
