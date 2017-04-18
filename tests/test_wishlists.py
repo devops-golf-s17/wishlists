@@ -20,7 +20,6 @@ class WishlistTestCase(unittest.TestCase):
 		server.app.logger.setLevel(logging.CRITICAL)
 
 		self.app = server.app.test_client()
-		#server.connect_to_redis('redis', 6379, None)
 		server.initialize_redis()
 		server.data_reset()
 		server.data_load({"name": "WL1", "id": "WL1", "user_id": "user1", "items": {"1": {"id": "i1", "description": "test item 1"}}})
