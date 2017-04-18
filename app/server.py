@@ -230,6 +230,7 @@ def delete_wishlist(wishlist_id):
 def search_wishlists():
 	"""
 	The route for searching items with specific keyword or ID.
+	http://0.0.0.0:5000/wishlists/search?q=Apple&user_id=123
 	"""
 
 	data = {}

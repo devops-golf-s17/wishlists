@@ -86,12 +86,15 @@ class Wishlist(object):
 
 	def search_items(self, data):
 		return_items=[]
-		if data['uid']==self.user_id:
+		if data['uid']==self.user_id or data['uid'] is None:
 			temp_items = self.items
 			for key,value in temp_items.iteritems():
-				for k2,v2 in value.iteritems():
-					if data['query'] in v2 and value not in return_items:
-						return_items.append(value)
+				if data['query'] is None:
+					return_items.append(value)
+				else:
+					for k2,v2 in value.iteritems():
+						if data['query'] in v2 and value not in return_items:
+							return_items.append(value)
 			if return_items:
 				wl = {'Wishlist ID':self.id, 'Search results':return_items }
 				return wl
@@ -137,7 +140,7 @@ class Wishlist(object):
 			self.name = data['name']
 			self.user_id = data['user_id']
 			if 'items' not in data:
-				self.items = {}
+				self.items = self.items
 			else:
 				self.items = data['items']
 			self.created = str(datetime.utcnow())
