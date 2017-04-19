@@ -35,7 +35,6 @@ def step_impl(context, url):
     context.resp = context.app.get(url)
     assert context.resp.status_code == 200
 
-
 @when(u'I retrieve "{url}" with id "{id}"')
 def step_impl(context, url, id):
     target_url = '/{}/{}'.format(url, id)
@@ -46,7 +45,18 @@ def step_impl(context, url, id):
 def step_impl(context, id):
     assert id in context.resp.data
 
-
 @then(u'I should see "{message}" in this wishlist')
 def step_impl(context, message):
     assert message in context.resp.data
+
+@when(u'I change "{key}" to "{value}"')
+def step_impl(context, key, value):
+    data = json.loads(context.resp.data)
+    data[key] = value
+    context.resp.data = json.dumps(data)
+
+@when(u'I update "{url}" with id "{id}"')
+def step_impl(context, url, id):
+    target_url = '/{}/{}'.format(url, id)
+    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
+    assert context.resp.status_code == 200
