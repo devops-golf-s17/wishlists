@@ -35,8 +35,6 @@ def step_impl(context, url):
     context.resp = context.app.get(url)
     assert context.resp.status_code == 200
 
-<<<<<<< HEAD
-=======
 @then(u'I should see a wishlist with id "{id}" and name "{name}"')
 def step_impl(context, id, name):
     assert name and id in context.resp.data
@@ -52,7 +50,6 @@ def step_impl(context,url,id):
 def step_impl(context,id, name):
     assert name or id not in context.resp.data    
 
->>>>>>> master
 @when(u'I retrieve "{url}" with id "{id}"')
 def step_impl(context, url, id):
     target_url = '/{}/{}'.format(url, id)
@@ -81,7 +78,7 @@ def step_impl(context, url, id):
 
 @when(u'I delete an item with id "{item_id}" from wishlist with id "{wishlist_id}"')
 def step_impl(context, item_id, wishlist_id):
-    target_url = "wishlists/{}/items/{}".format(wishlist_id,item_id)
+    target_url = "wishlists/{}/{items}/{}".format(wishlist_id,item_id)
     context.resp = context.app.delete(target_url)
     assert context.resp.status_code == 204
     assert item_id not in context.resp.data
@@ -91,3 +88,16 @@ def step_impl(context,id,wishlist_id):
     target_url = "wishlists/{}".format(wishlist_id)
     context.resp = context.app.get(target_url)
     assert id not in context.resp.data
+
+@when(u'When I update items with id "{item_id}"" from a wishlist with id "{wishlist_id}"')
+def step_impl(context, url, id):
+    target_url = "wishlists/{}/items/{}".format(wishlist_id,item_id)
+    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
+    assert context.resp.status_code == 200
+'''
+@when(u'I update "{url}" with id "{id}" in a wishlist with id "{wishlist_id}"')
+def step_impl(context, url, id):
+    target_url = '/wishlists/{}/{}/{}'.format(wishlist_id, url, id)
+    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
+    assert context.resp.status_code == 200
+'''
