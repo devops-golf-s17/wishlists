@@ -37,7 +37,6 @@ Scenario: Get a wishlist with given id
     Then I should see "user1" in this wishlist
     And I should not see "404 Not Found"
 
-
     
 Scenario: Deleting a wishlist
     When I visit "wishlists"
@@ -56,4 +55,9 @@ Scenario: Deleting a wishlist item
     Then I should see a wishlist with id "1"
     And I should not see an item with id "item2" from wishlist with id "1"
 
+
+Scenario: Adding a new wishlist
+    When I create new wishlist at "wishlists" with user_id "user2" and name "wl4"
+    And I visit "wishlists"
+    Then I should see a wishlist with id "4" and name "wl4"
 
