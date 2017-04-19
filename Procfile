@@ -1,1 +1,1 @@
-web: python wishlists.py
+web: python run.py
