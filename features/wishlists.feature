@@ -35,7 +35,7 @@ Scenario: List all wishlists
 Scenario: Get a wishlist with given id
     When I retrieve "wishlists" with id "1"
     Then I should see "user1" in this wishlist
-    Then I should not see "404 Not Found"
+    And I should not see "404 Not Found"
 
 
     
@@ -49,5 +49,11 @@ Scenario: Deleting a wishlist
     Then I should see a wishlist with id "1" and name "wl1"
     And I should not see a wishlist with id "2" and name "wl2"
     And I should see a wishlist with id "3" and name "wl3"
+
+Scenario: Deleting a wishlist item
+    When I delete an item with id "item2" from wishlist with id "1"
+    And I retrieve "wishlists" with id "1"
+    Then I should see a wishlist with id "1"
+    And I should not see an item with id "item2" from wishlist with id "1"
 
 
