@@ -55,6 +55,17 @@ Scenario: Deleting a wishlist item
     Then I should see a wishlist with id "1"
     And I should not see an item with id "item2" from wishlist with id "1"
 
+Scenario: Update a wishlist name
+    When I retrieve "wishlists" with id "1"
+    And I change "name" to "test change"
+    And I update "wishlists" with id "1"
+    Then I should see "test change"
+
+Scenario: Update a item description
+    When I retrieve an item with id "item1" from wishlist id "1"
+    And I change "description" to "test change"
+    And I update an item with id "item1" in a wishlist with id "1"
+    Then I should see "test change"
 
 Scenario: Adding a new wishlist
     When I create new wishlist at "wishlists" with user_id "user2" and name "wl4"

@@ -60,10 +60,21 @@ def step_impl(context, url, id):
 def step_impl(context, id):
     assert id in context.resp.data
 
-
 @then(u'I should see "{message}" in this wishlist')
 def step_impl(context, message):
     assert message in context.resp.data
+
+@when(u'I change "{key}" to "{value}"')
+def step_impl(context, key, value):
+    data = json.loads(context.resp.data)
+    data[key] = value
+    context.resp.data = json.dumps(data)
+
+@when(u'I update "{url}" with id "{id}"')
+def step_impl(context, url, id):
+    target_url = '/{}/{}'.format(url, id)
+    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
+    assert context.resp.status_code == 200
 
 @when(u'I delete an item with id "{item_id}" from wishlist with id "{wishlist_id}"')
 def step_impl(context, item_id, wishlist_id):
@@ -78,6 +89,11 @@ def step_impl(context,id,wishlist_id):
     context.resp = context.app.get(target_url)
     assert id not in context.resp.data
 
+@when(u'I update an item with id "{item_id}" in a wishlist with id "{wishlist_id}"')
+def step_impl(context, item_id, wishlist_id):
+    target_url = '/wishlists/{}/items/{}'.format(wishlist_id, item_id)
+    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
+    assert context.resp.status_code == 200
 
 @when(u'I create new wishlist at "{url}" with user_id "{user_id}" and name "{wishlist_name}"')
 def step_impl(context,url,user_id,wishlist_name):
