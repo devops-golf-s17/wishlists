@@ -27,9 +27,17 @@ Scenario: The wishlists service is running
 
 Scenario: List all wishlists
 	When I visit "wishlists"
-	Then I should see a wishlist with id "1" and name "wl1"
-	And I should see a wishlist with id "2" and name "wl2"
-	And I should see a wishlist with id "3" and name "wl3"
+	Then I should see a wishlist with id "1"
+	And I should see a wishlist with id "2"
+	And I should see a wishlist with id "3"
+
+
+Scenario: Get a wishlist with given id
+    When I retrieve "wishlists" with id "1"
+    Then I should see "user1" in this wishlist
+    Then I should not see "404 Not Found"
+
+
     
 Scenario: Deleting a wishlist
     When I visit "wishlists"
@@ -41,4 +49,5 @@ Scenario: Deleting a wishlist
     Then I should see a wishlist with id "1" and name "wl1"
     And I should not see a wishlist with id "2" and name "wl2"
     And I should see a wishlist with id "3" and name "wl3"
+
 

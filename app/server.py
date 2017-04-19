@@ -159,9 +159,11 @@ def update_wishlist_item(wishlist_id, item_id):
 	Example: curl -i -H 'Content-Type: application/json' -X PUT -d '{"description":"update product!"}' http://127.0.0.1:5000/wishlists/1/items/i123
 	H is for headers, X is used to specify HTTP Method, d is used to pass a message.
 	"""
-
-	data=request.get_json()
-	data['id'] = item_id
+	try:
+		data=request.get_json()
+		data['id'] = item_id
+	except TypeError:
+		( jsonify("Invalid input data type"), status.HTTP_400_BAD_REQUEST )
 
 	if is_valid(data, 'item'):
 		try:
@@ -188,17 +190,16 @@ def remove_wishlist_item(wishlist_id, item_id):
 	given a wishlist_id and the item_id
 	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1/items/i123
 	"""
-
+	wl = Wishlist.find(wishlist_id)
+	if not wl:
+		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 	try:
-		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(item_id)
 		wl.save_wishlist()
 		return make_response('', status.HTTP_204_NO_CONTENT)
 	except ItemException:
-		return make_response(jsonify(message='Item with id %s could not be found' % item_id), status.HTTP_204_NO_CONTENT)
-	except WishlistException:
-		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
-
+		message = { 'error' : 'Item %s was not found' % item_id }
+		return make_response(jsonify(message), status.HTTP_204_NO_CONTENT)
 
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
@@ -228,11 +229,12 @@ def delete_wishlist(wishlist_id):
 	Example: curl -X DELETE http://127.0.0.1:5000/wishlists/1
 	"""
 
-	try:
-		wl = Wishlist.find_or_404(wishlist_id)
+
+	wl = Wishlist.find(wishlist_id)
+	if wl:
 		wl.delete()
 		return make_response('', status.HTTP_204_NO_CONTENT)
-	except WishlistException:
+	else:
 		return make_response(jsonify(message='Wishlist with id %d could not be found' % wishlist_id), status.HTTP_204_NO_CONTENT)
 
 
@@ -255,7 +257,10 @@ def search_wishlists():
 		item = wl.search_items(data)
 		if item:
 			returned_items.append(item)
-	return make_response(jsonify(returned_items), status.HTTP_200_OK)
+	if returned_items:
+		return make_response(jsonify(returned_items), status.HTTP_200_OK)
+	else:
+		return make_response(jsonify("No results found."), status.HTTP_404_NOT_FOUND)
 
 
 def is_valid(data, type):
@@ -276,7 +281,6 @@ def is_valid(data, type):
 	return valid
 
 
-
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -292,7 +296,6 @@ def data_load_wishlist_items(data):
 	#data_to_be_sent = {"id":data['id'], "description":data['description']}
 	wl = Wishlist.find_or_404(data['wishlist_id'])
 	wl.deserialize_wishlist_items(data).save_item()
-
 
 
 ######################################################################
@@ -314,7 +317,9 @@ def connect_to_redis(hostname, port, password):
 #   2) With Redis running on the local server as with Travis CI
 #   3) With Redis --link ed in a Docker container called 'redis'
 ######################################################################
-def inititalize_redis():
+
+def initialize_redis():
+
 	global redis
 	redis = None
 	# Get the credentials from the Bluemix environment
@@ -336,4 +341,3 @@ def inititalize_redis():
 		app.logger.error('*** FATAL ERROR: Could not connect to the Redis Service')
 	# Have the Wishlist model use Redis
 	Wishlist.use_db(redis)
-	
