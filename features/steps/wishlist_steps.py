@@ -4,19 +4,19 @@ from app import server
 
 @given(u'the server is started')
 def step_impl(context):
-	context.app = server.app.test_client()
-	context.server = server
+    context.app = server.app.test_client()
+    context.server = server
 
 @given(u'the following wishlists')
 def step_impl(context):
     server.data_reset()
     for row in context.table:
-    	server.data_load_wishlist({"name": row['name'], "id": row['id'], "user_id": row['user_id']})
+        server.data_load_wishlist({"name": row['name'], "id": row['id'], "user_id": row['user_id']})
 
 @given(u'the following items')
 def step_impl(context):
-	for row in context.table:
-		server.data_load_wishlist_items({"id": row['item_id'], "wishlist_id": row['wishlist_id'], "description": row['description']})	
+    for row in context.table:
+        server.data_load_wishlist_items({"id": row['item_id'], "wishlist_id": row['wishlist_id'], "description": row['description']})   
 
 @when(u'I visit the "home page"')
 def step_impl(context):
@@ -78,3 +78,9 @@ def step_impl(context,id,wishlist_id):
     context.resp = context.app.get(target_url)
     assert id not in context.resp.data
 
+
+@when(u'I create new wishlist at "{url}" with user_id "{user_id}" and name "{wishlist_name}"')
+def step_impl(context,url,user_id,wishlist_name):
+    data = {"name":wishlist_name,"user_id":user_id}
+    context.resp = context.app.post(url, data=json.dumps(data), content_type='application/json')
+    assert context.resp.status_code == 201
