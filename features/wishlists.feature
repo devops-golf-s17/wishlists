@@ -37,3 +37,16 @@ Scenario: Get a wishlist with given id
     Then I should see "user1" in this wishlist
     Then I should not see "404 Not Found"
 
+
+Scenario: Update a wishlist name
+    When I retrieve "wishlists" with id "1"
+    And I change "name" to "test change"
+    And I update "wishlists" with id "1"
+    Then I should see "test change"
+
+Scenario: Update a item description
+    When I retrieve "items" with id "item1" in a wishlist with id "1"
+    And I change "description" to "test change"
+    And I update "items" with id "item1" in a wishlist with id "1"
+    Then I should see "test change"
+
