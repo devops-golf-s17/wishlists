@@ -89,7 +89,7 @@ def step_impl(context,id,wishlist_id):
     context.resp = context.app.get(target_url)
     assert id not in context.resp.data
 
-@when(u'When I update items with id "{item_id}"" from a wishlist with id "{wishlist_id}"')
+@when(u'When I update and item with id "{item_id}" from a wishlist with id "{wishlist_id}"')
 def step_impl(context, url, id):
     target_url = "wishlists/{}/items/{}".format(wishlist_id,item_id)
     context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
