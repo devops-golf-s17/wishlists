@@ -37,7 +37,6 @@ Scenario: Get a wishlist with given id
     Then I should see "user1" in this wishlist
     And I should not see "404 Not Found"
 
-
     
 Scenario: Deleting a wishlist
     When I visit "wishlists"
@@ -67,4 +66,17 @@ Scenario: Update a item description
     And I change "description" to "test change"
     And I update "items" with id "item1" in a wishlist with id "1"
     Then I should see "test change"
+
+Scenario: Adding a new wishlist
+    When I create new wishlist at "wishlists" with user_id "user2" and name "wl4"
+    And I visit "wishlists"
+    Then I should see a wishlist with id "4" and name "wl4"
+
+Scenario: Adding a new item and read this item
+    When I create an item with id "item4" and description "add item" to wishlist id "1"
+    And I retrieve an item with id "item4" from wishlist id "1"
+    Then I should see an item with id "item4" and description "add item"
+    And I should not see "404 Not Found"
+
+
 
