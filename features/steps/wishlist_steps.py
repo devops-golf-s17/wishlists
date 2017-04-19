@@ -88,7 +88,7 @@ def step_impl(context,url,user_id,wishlist_name):
 @when(u'I create a new item with id "{item_id}" and desciption "{message}" to wishlist id "{wishlist_id}"')
 def step_impl(context,item_id,message,wishlist_id):
     data = {"id":item_id,"description":message}
-    url = "wishlists"
+    url = "wishlists/{}/items".format(wishlist_id)
     context.resp = context.app.post(url, data=json.dumps(data), content_type='application/json')
     assert context.resp.status_code == 201
 
