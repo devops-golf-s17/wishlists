@@ -37,7 +37,7 @@ def step_impl(context, url):
 
 @then(u'I should see a wishlist with id "{id}" and name "{name}"')
 def step_impl(context, id, name):
-    assert name in context.resp.data
+    assert name and id in context.resp.data
 
 @when(u'I delete "{url}" with id "{id}"')
 def step_impl(context,url,id):
@@ -48,4 +48,4 @@ def step_impl(context,url,id):
 
 @then(u'I should not see a wishlist with id "{id}" and name "{name}"')
 def step_impl(context,id, name):
-    assert name not in context.resp.data    
+    assert name or id not in context.resp.data    
