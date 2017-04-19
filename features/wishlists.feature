@@ -62,7 +62,7 @@ Scenario: Adding a new wishlist
     Then I should see a wishlist with id "4" and name "wl4"
 
 Scenario: Adding a new item and read this item
-    When I create a new item with id "item4" and description "add item" to wishlist id "1"
+    When I create an item with id "item4" and description "add item" to wishlist id "1"
     And I retrieve an item with id "item4" from wishlist id "1"
     Then I should see an item with id "item4" and description "add item"
     And I should not see "404 Not Found"
