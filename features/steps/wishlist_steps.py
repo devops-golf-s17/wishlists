@@ -89,18 +89,11 @@ def step_impl(context,id,wishlist_id):
     context.resp = context.app.get(target_url)
     assert id not in context.resp.data
 
-@when(u'When I update and item with id "{item_id}" from a wishlist with id "{wishlist_id}"')
-def step_impl(context, url, id):
-    target_url = "wishlists/{}/items/{}".format(wishlist_id,item_id)
+@when(u'I update an item with id "{item_id}" in a wishlist with id "{wishlist_id}"')
+def step_impl(context, item_id, wishlist_id):
+    target_url = '/wishlists/{}/items/{}'.format(wishlist_id, item_id)
     context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
     assert context.resp.status_code == 200
-'''
-@when(u'I update "{url}" with id "{id}" in a wishlist with id "{wishlist_id}"')
-def step_impl(context, url, id):
-    target_url = '/wishlists/{}/{}/{}'.format(wishlist_id, url, id)
-    context.resp = context.app.put(target_url, data=context.resp.data, content_type='application/json')
-    assert context.resp.status_code == 200
-'''
 
 @when(u'I create new wishlist at "{url}" with user_id "{user_id}" and name "{wishlist_name}"')
 def step_impl(context,url,user_id,wishlist_name):

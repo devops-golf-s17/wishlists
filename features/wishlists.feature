@@ -62,9 +62,9 @@ Scenario: Update a wishlist name
     Then I should see "test change"
 
 Scenario: Update a item description
-    When I update an item with id "item1" from a wishlist with id "1"
+    When I retrieve an item with id "item1" from wishlist id "1"
     And I change "description" to "test change"
-    And I update "items" with id "item1" in a wishlist with id "1"
+    And I update an item with id "item1" in a wishlist with id "1"
     Then I should see "test change"
 
 Scenario: Adding a new wishlist
