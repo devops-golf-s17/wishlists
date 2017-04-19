@@ -78,7 +78,7 @@ def step_impl(context, url, id):
 
 @when(u'I delete an item with id "{item_id}" from wishlist with id "{wishlist_id}"')
 def step_impl(context, item_id, wishlist_id):
-    target_url = "wishlists/{}/{items}/{}".format(wishlist_id,item_id)
+    target_url = "wishlists/{}/items/{}".format(wishlist_id,item_id)
     context.resp = context.app.delete(target_url)
     assert context.resp.status_code == 204
     assert item_id not in context.resp.data
