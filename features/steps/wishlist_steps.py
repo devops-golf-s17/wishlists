@@ -117,3 +117,10 @@ def step_impl(context,item_id,wishlist_id):
 @then('I should see an item with id "{item_id}" and description "{message}"')
 def step_impl(context,item_id,message):
     assert item_id in context.resp.data and message in context.resp.data
+
+@when('When I search for query "{q}" in all wishlists with user id "{uid}"')
+def step_impl(context,q,uid):
+    target_url = "wishlists/search?q={}&user_id={}".format(q, uid)
+    context.resp = context.app.get(target_url)
+    assert context.resp.status_code == 200
+

@@ -78,5 +78,8 @@ Scenario: Adding a new item and read this item
     Then I should see an item with id "item4" and description "add item"
     And I should not see "404 Not Found"
 
-
-
+Scenario: Searching 
+    When I search for query "item1" in all wishlists with user id "user1"
+    Then I should see "test item 1"
+    And I should not see "test item 2"
+    And I should not see "user2"

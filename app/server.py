@@ -257,10 +257,9 @@ def search_wishlists():
 		item = wl.search_items(data)
 		if item:
 			returned_items.append(item)
-	if returned_items:
-		return make_response(jsonify(returned_items), status.HTTP_200_OK)
-	else:
-		return make_response(jsonify("No results found."), status.HTTP_404_NOT_FOUND)
+	message = 'Search results for keyword %q in wishlists with user ID %uid' % (data['query'], data['uid'])
+	ret = {message : returned_items}
+	return make_response(jsonify(ret), status.HTTP_200_OK)
 
 
 def is_valid(data, type):
