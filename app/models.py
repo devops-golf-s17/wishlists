@@ -97,7 +97,8 @@ class Wishlist(object):
 						if data['query'] in v2 and value not in return_items:
 							return_items.append(value)
 			if return_items:
-				wl = {'Wishlist ID':self.id, 'Search results':return_items }
+				message = "Results from wishlist with ID: %s" % self.id
+				wl = {message:return_items}
 				return wl
 			else:
 				return None
