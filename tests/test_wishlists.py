@@ -233,7 +233,7 @@ class WishlistTestCase(unittest.TestCase):
 	"""
 	def test_search_not_in_wishlists(self):
 		resp = self.app.get('/wishlists/search?q=Random&user_id=user1')
-		self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
 	"""
 	This is a testcase to search an object not present in the users wishlist.
