@@ -1,4 +1,8 @@
 # wishlists
+
+[![Build Status](https://travis-ci.org/devops-golf-s17/wishlists.svg?branch=master)](https://travis-ci.org/devops-golf-s17/wishlists)
+[![Codecov](https://img.shields.io/codecov/c/github/devops-golf-s17/wishlists.svg)]()
+
 **Wishlists for the e-commerce website.**
 Wish lists are collections of desired products saved by customers to their user account, signifying interest without immediate intent to purchase.
 
