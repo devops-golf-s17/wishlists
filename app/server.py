@@ -72,13 +72,24 @@ def add_wishlist():
               type: string
               description: Wishlist Name(created by the user)
             created:
-              type: datetime
+              type: string
+              format: date-time
               description: The time at which the wishlist was created
             deleted:
               type: boolean
               description: Flag to be set when a wishlist is deleted
             items:
-              type: dictionary
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item      
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -145,13 +156,24 @@ def add_item_to_wishlist(wishlist_id):
               type: string
               description: Wishlist Name(created by the user)
             created:
-              type: datetime
+              type: string
+              format: date-time
               description: The time at which the wishlist was created
             deleted:
               type: boolean
               description: Flag to be set when a wishlist is deleted
             items:
-              type: dictionary
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item                
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -179,7 +201,7 @@ def add_item_to_wishlist(wishlist_id):
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
 	"""
-    Retrieve a list of Wishlists.
+    Retrieve a list of Wishlists
     This endpoint will return all wishlists
     ---
     tags:
@@ -200,13 +222,22 @@ def wishlists():
                   type: string
                   description: Wishlist Name(created by the user)
                 created:
-                  type: dateTime
+                  type: string
+              	  format: date-time
                   description: The time at which the wishlist was created
                 deleted:
                   type: boolean
                   description: Flag to be set when a wishlist is deleted
                 items:
-                  type: dictionary
+              	  type: object
+              	  properties:
+              	  	wishlist_item_id:
+              	  	  type: object
+              	  	  properties:
+              	  	  	item_id:
+              	  	  	  type: string
+              	  	  	item_description:
+              	  	  	  type: string 
                   description: Dictionary to store objects in a wishlist
                 id:
                   type: integer
@@ -250,13 +281,22 @@ def read_wishlist(wishlist_id):
                   type: string
                   description: Wishlist Name(created by the user)
                 created:
-                  type: dateTime
+                  type: string
+              	  format: date-time
                   description: The time at which the wishlist was created
                 deleted:
                   type: boolean
                   description: Flag to be set when a wishlist is deleted
                 items:
-                  type: dictionary
+              	  type: object
+              	  properties:
+              	  	wishlist_item_id:
+              	  	  type: object
+              	  	  properties:
+              	  	  	item_id:
+              	  	  	  type: string
+              	  	  	item_description:
+              	  	  	  type: string   
                   description: Dictionary to store objects in a wishlist
                 id:
                   type: integer
@@ -278,7 +318,7 @@ def item(wishlist_id):
     This endpoint will return all items
     ---
     tags:
-      - Wishlists
+      - Wishlist Items
     parameters:
       - name: wishlist_id
         in: path
@@ -287,9 +327,9 @@ def item(wishlist_id):
         type: integer
     responses:
       200:
-        description: An array of Items
+        description: Wishlist items belonging to the wishlist ID
         schema:
-          type: dictionary
+          type: array
           items:
             schema:
               id: Wishlist
@@ -408,13 +448,22 @@ def update_wishlist(id):
                   type: string
                   description: Wishlist Name(created by the user)
                 created:
-                  type: dateTime
+                  type: string
+              	  format: date-time
                   description: The time at which the wishlist was created
                 deleted:
                   type: boolean
                   description: Flag to be set when a wishlist is deleted
                 items:
-                  type: dictionary
+                  type: object
+                  properties:
+              	  	wishlist_item_id:
+              	  	  type: object
+              	  	  properties:
+              	  	  	item_id:
+              	  	  	  type: string
+              	  	  	item_description:
+              	  	  	  type: string 
                   description: Dictionary to store objects in a wishlist
                 id:
                   type: integer
@@ -488,13 +537,14 @@ def update_wishlist_item(wishlist_id, item_id):
                   type: string
                   description: Wishlist Name(created by the user)
                 created:
-                  type: dateTime
+                  type: string
+                  format: date-time
                   description: The time at which the wishlist was created
                 deleted:
                   type: boolean
                   description: Flag to be set when a wishlist is deleted
                 items:
-                  type: dictionary
+                  type: object
                   description: Dictionary to store objects in a wishlist
                 id:
                   type: integer
@@ -567,9 +617,22 @@ def remove_wishlist_item(wishlist_id, item_id):
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
 	"""
-		The route for clearing a wishlist specified by wishlist_id
-		without deleting the wishlist itself.
-		Example: curl -X PUT http://127.0.0.1:5000/wishlists/1/items/clear
+	Clearing a wishlist
+	This endpoint will clear a wishlist based on the id specified in the path
+	---
+	tags:
+	  - Wishlists
+	description: Clears a wishlist in the database, i.e. no items.
+	parameters:
+	  - name: wishlist_id
+	    in: path
+	    type: integer
+	    required: true
+	responses:
+	  200:
+	  	description: Wishlist cleared
+	  404:
+	  	description: Wishlist not found	       
 	"""
 
 	try:
@@ -637,9 +700,16 @@ def search_wishlists():
       	required: true  
     responses:
       200:
-        description: Wishlist Item returned which match with the query
-
-
+        description: Wishlist items matching with the query
+        schema:
+          id: Wishlist
+          properties:
+            id:
+              type: string
+              description: ID of the item matching
+            description:
+              type: string
+              description: Description of the item
 	"""
 
 	data = {}
