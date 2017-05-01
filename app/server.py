@@ -112,7 +112,7 @@ def add_wishlist():
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
 def add_item_to_wishlist(wishlist_id):
-	"""
+    """
     Add a Wishlist Item to an existing wishlist
     This endpoint will add a wishlist item based on the data in the body that is posted
     ---
@@ -200,7 +200,7 @@ def add_item_to_wishlist(wishlist_id):
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
-	"""
+    """
     Retrieve a list of Wishlists
     This endpoint will return all wishlists
     ---
@@ -251,7 +251,7 @@ def wishlists():
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
 def read_wishlist(wishlist_id):
-	"""
+    """
     Retrieve a single Wishlist
     This endpoint will return a Wishlist based on it's ID
     ---
@@ -312,7 +312,7 @@ def read_wishlist(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items', methods=['GET'])
 def item(wishlist_id):
-	"""
+    """
     Retrieve a list of items in the wishlist
     This endpoint will return all items
     ---
@@ -354,7 +354,7 @@ def item(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
 def read_wishlist_item(wishlist_id, item_id):
-	"""
+    """
     Retrieve a single Wishlist item
     This endpoint will return a Wishlist item based on it's ID
     ---
@@ -400,7 +400,7 @@ def read_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:id>', methods=['PUT'])
 def update_wishlist(id):
-	"""
+    """
     Update a Wishlist
     This endpoint will update a Wishlist based on the body that is put
     ---
@@ -487,7 +487,7 @@ def update_wishlist(id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
-	"""
+    """
     Update a Wishlist Item
     This endpoint will update a Wishlist Item based the body that is posted
     ---
@@ -584,8 +584,8 @@ def update_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
 def remove_wishlist_item(wishlist_id, item_id):
-	"""
-	Delete a Wishlist item
+    """
+    Delete a Wishlist item
     This endpoint will delete an item based on the id specified in the path
     ---
     tags:
@@ -620,7 +620,7 @@ def remove_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
-	"""
+    """
     Clears a Wishlist
     This endpoint will clear a Wishlist based on the wishlist_id
     ---
@@ -688,8 +688,8 @@ def clear_wishlist(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['DELETE'])
 def delete_wishlist(wishlist_id):
-	"""
-	Delete a Wishlist
+    """
+    Delete a Wishlist
     This endpoint will delete a Wishlist based on the id specified in the path
     ---
     tags:
@@ -717,8 +717,8 @@ def delete_wishlist(wishlist_id):
 
 @app.route('/wishlists/search', methods=['GET'])
 def search_wishlists():
-	"""
-	Search a Wishlist Item
+    """
+    Search a Wishlist Item
     This endpoint will return a Wishlist Item based on the query parameters
     ---
     tags:
