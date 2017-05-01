@@ -145,7 +145,7 @@ def add_item_to_wishlist(wishlist_id):
               description: Description of the item to be added to the wishlist
     responses:
       201:
-        description: Wishlist created
+        description: Wishlist item created
         schema:
           id: Wishlist
           properties:
@@ -267,40 +267,39 @@ def read_wishlist(wishlist_id):
         required: true
     responses:
       200:
-        description: Wishlist returned
+        description: Wishlist retrieved
         schema:
-          type: dict
-          items:
-            schema:
-              id: Wishlist
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
               properties:
-                user_id:
-                  type: string
-                  description: Unique ID of the user(created by the user)
-                name:
-                  type: string
-                  description: Wishlist Name(created by the user)
-                created:
-                  type: string
-              	  format: date-time
-                  description: The time at which the wishlist was created
-                deleted:
-                  type: boolean
-                  description: Flag to be set when a wishlist is deleted
-                items:
-              	  type: object
-              	  properties:
-              	  	wishlist_item_id:
-              	  	  type: object
-              	  	  properties:
-              	  	  	item_id:
-              	  	  	  type: string
-              	  	  	item_description:
-              	  	  	  type: string   
-                  description: Dictionary to store objects in a wishlist
-                id:
-                  type: integer
-                  description: Unique ID of the wishlist assigned internally by the server
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item      
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
       404:
         description: Wishlist not found
     """
@@ -329,17 +328,19 @@ def item(wishlist_id):
       200:
         description: Wishlist items belonging to the wishlist ID
         schema:
-          type: array
-          items:
-            schema:
-              id: Wishlist
-              properties:
-                id:
-                  type: string
-                  description: ID of the item
-                description:
-                  type: string
-                  description: Description of the item
+        	id: Wishlist
+        	properties:
+			  	wishlist_item_id:
+			  		type: object
+			  		properties:
+			  			item_id:
+			  				type: string
+			  				description: ID of the item
+			  			item_description:
+			  				type: string
+			  				description: Description of the item	
+                  		
+        	  
       404:
         description: Wishlist not found            
     """
@@ -374,19 +375,16 @@ def read_wishlist_item(wishlist_id, item_id):
       	required: true 
     responses:
       200:
-        description: Wishlist Item returned
+        description: Wishlist items matching with the query
         schema:
-          type: dict
-          items:
-            schema:
-              id: Wishlist
-              properties:
-                id:
-                  type: string
-                  description: ID of the item to be retrieved
-                description:
-                  type: string
-                  description: Description of the item retrieved
+          id: Wishlist
+          properties:
+            id:
+              type: string
+              description: ID of the item matching
+            description:
+              type: string
+              description: Description of the item
       404:
         description: Wishlist not found
     """
@@ -404,7 +402,7 @@ def read_wishlist_item(wishlist_id, item_id):
 def update_wishlist(id):
 	"""
     Update a Wishlist
-    This endpoint will update a Wishlist based the body that is posted
+    This endpoint will update a Wishlist based on the body that is put
     ---
     tags:
       - Wishlists
@@ -436,38 +434,37 @@ def update_wishlist(id):
       200:
         description: Wishlist updated
         schema:
-          type: dict
-          items:
-            schema:
-              id: Wishlist
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
               properties:
-                user_id:
-                  type: string
-                  description: Unique ID of the user(created by the user)
-                name:
-                  type: string
-                  description: Wishlist Name(created by the user)
-                created:
-                  type: string
-              	  format: date-time
-                  description: The time at which the wishlist was created
-                deleted:
-                  type: boolean
-                  description: Flag to be set when a wishlist is deleted
-                items:
+                wishlist_item_id:
                   type: object
                   properties:
-              	  	wishlist_item_id:
-              	  	  type: object
-              	  	  properties:
-              	  	  	item_id:
-              	  	  	  type: string
-              	  	  	item_description:
-              	  	  	  type: string 
-                  description: Dictionary to store objects in a wishlist
-                id:
-                  type: integer
-                  description: Unique ID of the wishlist assigned internally by the server
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item      
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
       404:
       	description: Wishlist not found
       400:
@@ -523,32 +520,39 @@ def update_wishlist_item(wishlist_id, item_id):
               description: Updated description of the item
     responses:
       200:
-        description: Wishlist Item updated
+        description: Wishlist item updated
         schema:
-          type: dict
-          items:
-            schema:
-              id: Wishlist
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
               properties:
-                user_id:
-                  type: string
-                  description: Unique ID of the user(created by the user)
-                name:
-                  type: string
-                  description: Wishlist Name(created by the user)
-                created:
-                  type: string
-                  format: date-time
-                  description: The time at which the wishlist was created
-                deleted:
-                  type: boolean
-                  description: Flag to be set when a wishlist is deleted
-                items:
+                wishlist_item_id:
                   type: object
-                  description: Dictionary to store objects in a wishlist
-                id:
-                  type: integer
-                  description: Unique ID of the wishlist assigned internally by the server
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item      
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
       404:
       	description: Wishlist/Item not found.
       400:
