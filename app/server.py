@@ -621,23 +621,59 @@ def remove_wishlist_item(wishlist_id, item_id):
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
 	"""
-	Clearing a wishlist
-	This endpoint will clear a wishlist based on the id specified in the path
-	---
-	tags:
-	  - Wishlists
-	description: Clears a wishlist in the database, i.e. no items.
-	parameters:
-	  - name: wishlist_id
-	    in: path
-	    type: integer
-	    required: true
-	responses:
-	  200:
-	  	description: Wishlist cleared
-	  404:
-	  	description: Wishlist not found	       
-	"""
+    Clears a Wishlist
+    This endpoint will clear a Wishlist based on the wishlist_id
+    ---
+    tags:
+      - Wishlists
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+      	in: path
+      	description: ID of the wishlist to be cleared
+      	type: integer
+      	required: true
+    responses:
+      200:
+        description: Wishlist cleared
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item      
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      404:
+        description: Wishlist not found
+    """
 
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
