@@ -97,7 +97,6 @@ def add_wishlist():
       400:
         description: Bad Request (the posted data was not valid)
     """
-
 	data = request.get_json()
 	if is_valid(data,'wishlist'):
 		wishl = Wishlist()
