@@ -33,7 +33,7 @@ def index():
 
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
-    """
+	"""
     Creates a Wishlist
     This endpoint will create a Wishlist based on the data in the body that is posted
     ---
@@ -89,7 +89,7 @@ def add_wishlist():
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item      
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -97,6 +97,7 @@ def add_wishlist():
       400:
         description: Bad Request (the posted data was not valid)
     """
+
 	data = request.get_json()
 	if is_valid(data,'wishlist'):
 		wishl = Wishlist()
@@ -106,12 +107,12 @@ def add_wishlist():
 		return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wishl.self_url()})
 	else:
 		message = {'error' : 'Wishlist data was not valid'}
-		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)   
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
 
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
 def add_item_to_wishlist(wishlist_id):
-    """
+	"""
     Add a Wishlist Item to an existing wishlist
     This endpoint will add a wishlist item based on the data in the body that is posted
     ---
@@ -172,7 +173,7 @@ def add_item_to_wishlist(wishlist_id):
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item                
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -186,7 +187,7 @@ def add_item_to_wishlist(wishlist_id):
 			wl = Wishlist.find_or_404(wishlist_id)
 			wl.deserialize_wishlist_items(data)
 			wl.save_item()
-			message = wl.serialize_wishlist()    
+			message = wl.serialize_wishlist()
 			return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
 		except WishlistException:
 			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
@@ -194,12 +195,12 @@ def add_item_to_wishlist(wishlist_id):
 	else:
 		message = {'error' : 'Item data was not valid'}
 		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
-		
+
 
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
-    """
+	"""
     Retrieve a list of Wishlists
     This endpoint will return all wishlists
     ---
@@ -236,7 +237,7 @@ def wishlists():
               	  	  	item_id:
               	  	  	  type: string
               	  	  	item_description:
-              	  	  	  type: string 
+              	  	  	  type: string
                   description: Dictionary to store objects in a wishlist
                 id:
                   type: integer
@@ -250,7 +251,7 @@ def wishlists():
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
 def read_wishlist(wishlist_id):
-    """
+	"""
     Retrieve a single Wishlist
     This endpoint will return a Wishlist based on it's ID
     ---
@@ -294,7 +295,7 @@ def read_wishlist(wishlist_id):
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item      
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -311,7 +312,7 @@ def read_wishlist(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items', methods=['GET'])
 def item(wishlist_id):
-    """
+	"""
     Retrieve a list of items in the wishlist
     This endpoint will return all items
     ---
@@ -337,11 +338,11 @@ def item(wishlist_id):
 			  				description: ID of the item
 			  			item_description:
 			  				type: string
-			  				description: Description of the item	
-                  		
-        	  
+			  				description: Description of the item
+
+
       404:
-        description: Wishlist not found            
+        description: Wishlist not found
     """
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
@@ -353,7 +354,7 @@ def item(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
 def read_wishlist_item(wishlist_id, item_id):
-    """
+	"""
     Retrieve a single Wishlist item
     This endpoint will return a Wishlist item based on it's ID
     ---
@@ -371,7 +372,7 @@ def read_wishlist_item(wishlist_id, item_id):
       	in: path
       	description: ID of item to be retrieved
       	type: string
-      	required: true 
+      	required: true
     responses:
       200:
         description: Wishlist items matching with the query
@@ -399,7 +400,7 @@ def read_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:id>', methods=['PUT'])
 def update_wishlist(id):
-    """
+	"""
     Update a Wishlist
     This endpoint will update a Wishlist based on the body that is put
     ---
@@ -459,7 +460,7 @@ def update_wishlist(id):
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item      
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -486,7 +487,7 @@ def update_wishlist(id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
-    """
+	"""
     Update a Wishlist Item
     This endpoint will update a Wishlist Item based the body that is posted
     ---
@@ -506,7 +507,7 @@ def update_wishlist_item(wishlist_id, item_id):
       	in: path
       	description: ID of Item to be updated
       	type: String
-      	required: true  
+      	required: true
       - in: body
         name: body
         schema:
@@ -547,7 +548,7 @@ def update_wishlist_item(wishlist_id, item_id):
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item      
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -583,8 +584,8 @@ def update_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['DELETE'])
 def remove_wishlist_item(wishlist_id, item_id):
-    """
-    Delete a Wishlist item
+	"""
+	Delete a Wishlist item
     This endpoint will delete an item based on the id specified in the path
     ---
     tags:
@@ -600,7 +601,7 @@ def remove_wishlist_item(wishlist_id, item_id):
       	in: path
       	description: ID of the item to be deleted
       	type: string
-      	required: true  
+      	required: true
     responses:
       204:
         description: Item deleted
@@ -619,7 +620,7 @@ def remove_wishlist_item(wishlist_id, item_id):
 
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
-    """
+	"""
     Clears a Wishlist
     This endpoint will clear a Wishlist based on the wishlist_id
     ---
@@ -665,7 +666,7 @@ def clear_wishlist(wishlist_id):
                       description: Original ID of the item
                     item_description:
                       type: string
-                      description: Description of the item      
+                      description: Description of the item
               description: Dictionary to store objects in a wishlist
             id:
               type: integer
@@ -687,8 +688,8 @@ def clear_wishlist(wishlist_id):
 
 @app.route('/wishlists/<int:wishlist_id>', methods=['DELETE'])
 def delete_wishlist(wishlist_id):
-    """
-    Delete a Wishlist
+	"""
+	Delete a Wishlist
     This endpoint will delete a Wishlist based on the id specified in the path
     ---
     tags:
@@ -716,8 +717,8 @@ def delete_wishlist(wishlist_id):
 
 @app.route('/wishlists/search', methods=['GET'])
 def search_wishlists():
-    """
-    Search a Wishlist Item
+	"""
+	Search a Wishlist Item
     This endpoint will return a Wishlist Item based on the query parameters
     ---
     tags:
@@ -736,7 +737,7 @@ def search_wishlists():
       	in: query
       	description: User ID whose wishlists would be searched
       	type: String
-      	required: true  
+      	required: true
     responses:
       200:
         description: Wishlist items matching with the query
