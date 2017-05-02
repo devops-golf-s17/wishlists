@@ -737,24 +737,24 @@ def search_wishlists():
       	in: query
       	description: User ID whose wishlists would be searched
       	type: String
-      	required: true
     responses:
       200:
         description: Wishlist items matching with the query
         schema:
-          id: Wishlist
-          properties:
-            wishlist_item_id:
-                type: object
-                propertiest:
+          type: array
+          items:
+            schema:
+              id: Wishlist
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
                     item_id:
-                        type: string
-                        description: ID of the item matching
+                      type: string
+                      description: ID of the item matching
                     item_description:
-                        type:
-                    item_description:
-                        type: string
-                        description: Description of the item
+                      type: string
+                      description: Description of the item
       400:
         description: userid is missing
 	"""
