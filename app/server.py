@@ -34,69 +34,70 @@ def index():
 @app.route('/wishlists',methods=['POST'])
 def add_wishlist():
 	"""
-	Creates a Wishlist
-	This endpoint will create a Wishlist based on the data in the body that is posted
-	---
-	tags:
-	  - Wishlists
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - in: body
-		name: body
-		required: true
-		schema:
-		  id: data
-		  required:
-			- name
-			- category
-		  properties:
-			name:
-			  type: string
-			  description: name for the Wishlist
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-	responses:
-	  201:
-		description: Wishlist created
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item      
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  400:
-		description: Bad Request (the posted data was not valid)
-	"""
+    Creates a Wishlist
+    This endpoint will create a Wishlist based on the data in the body that is posted
+    ---
+    tags:
+      - Wishlists
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: data
+          required:
+            - name
+            - category
+          properties:
+            name:
+              type: string
+              description: name for the Wishlist
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+    responses:
+      201:
+        description: Wishlist created
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
+
 	data = request.get_json()
 	if is_valid(data,'wishlist'):
 		wishl = Wishlist()
@@ -106,87 +107,87 @@ def add_wishlist():
 		return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wishl.self_url()})
 	else:
 		message = {'error' : 'Wishlist data was not valid'}
-		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)   
+		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
 
 
 @app.route('/wishlists/<int:wishlist_id>/items',methods=['POST'])
 def add_item_to_wishlist(wishlist_id):
 	"""
-	Add a Wishlist Item to an existing wishlist
-	This endpoint will add a wishlist item based on the data in the body that is posted
-	---
-	tags:
-	  - Wishlist Items
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of wishlist to which the item has to be added to
-		type: integer
-		required: true
-	  - in: body
-		name: body
-		required: true
-		schema:
-		  id: data
-		  required:
-			- id
-			- description
-		  properties:
-			id:
-			  type: string
-			  description: ID of the wishlist item
-			description:
-			  type: string
-			  description: Description of the item to be added to the wishlist
-	responses:
-	  201:
-		description: Wishlist item created
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item                
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  400:
-		description: Bad Request (the posted data was not valid)
-	"""
+    Add a Wishlist Item to an existing wishlist
+    This endpoint will add a wishlist item based on the data in the body that is posted
+    ---
+    tags:
+      - Wishlist Items
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of wishlist to which the item has to be added to
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: data
+          required:
+            - id
+            - description
+          properties:
+            id:
+              type: string
+              description: ID of the wishlist item
+            description:
+              type: string
+              description: Description of the item to be added to the wishlist
+    responses:
+      201:
+        description: Wishlist item created
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
 	data = request.get_json()
 	if is_valid(data,'item'):
 		try:
 			wl = Wishlist.find_or_404(wishlist_id)
 			wl.deserialize_wishlist_items(data)
 			wl.save_item()
-			message = wl.serialize_wishlist()    
+			message = wl.serialize_wishlist()
 			return make_response(jsonify(message), status.HTTP_201_CREATED, {'Location': wl.self_url()})
 		except WishlistException:
 			message = { 'error' : 'Wishlist %s was not found' % wishlist_id }
@@ -194,54 +195,54 @@ def add_item_to_wishlist(wishlist_id):
 	else:
 		message = {'error' : 'Item data was not valid'}
 		return make_response(jsonify(message), status.HTTP_400_BAD_REQUEST)
-		
+
 
 
 @app.route('/wishlists', methods=['GET'])
 def wishlists():
 	"""
-	Retrieve a list of Wishlists
-	This endpoint will return all wishlists
-	---
-	tags:
-	  - Wishlists
-	responses:
-	  200:
-		description: An array of Wishlists
-		schema:
-		  type: array
-		  items:
-			schema:
-			  id: Wishlist
-			  properties:
-				user_id:
-				  type: string
-				  description: Unique ID of the user(created by the user)
-				name:
-				  type: string
-				  description: Wishlist Name(created by the user)
-				created:
-				  type: string
-				  format: date-time
-				  description: The time at which the wishlist was created
-				deleted:
-				  type: boolean
-				  description: Flag to be set when a wishlist is deleted
-				items:
-				  type: object
-				  properties:
-					wishlist_item_id:
-					  type: object
-					  properties:
-						item_id:
-						  type: string
-						item_description:
-						  type: string 
-				  description: Dictionary to store objects in a wishlist
-				id:
-				  type: integer
-				  description: Unique ID of the wishlist assigned internally by the server
-	"""
+    Retrieve a list of Wishlists
+    This endpoint will return all wishlists
+    ---
+    tags:
+      - Wishlists
+    responses:
+      200:
+        description: An array of Wishlists
+        schema:
+          type: array
+          items:
+            schema:
+              id: Wishlist
+              properties:
+                user_id:
+                  type: string
+                  description: Unique ID of the user(created by the user)
+                name:
+                  type: string
+                  description: Wishlist Name(created by the user)
+                created:
+                  type: string
+              	  format: date-time
+                  description: The time at which the wishlist was created
+                deleted:
+                  type: boolean
+                  description: Flag to be set when a wishlist is deleted
+                items:
+              	  type: object
+              	  properties:
+              	  	wishlist_item_id:
+              	  	  type: object
+              	  	  properties:
+              	  	  	item_id:
+              	  	  	  type: string
+              	  	  	item_description:
+              	  	  	  type: string
+                  description: Dictionary to store objects in a wishlist
+                id:
+                  type: integer
+                  description: Unique ID of the wishlist assigned internally by the server
+    """
 	wishlistsList = []
 	wishlistsList = Wishlist.all()
 	wishlistsList = [wishlist.serialize_wishlist() for wishlist in wishlistsList]
@@ -251,57 +252,57 @@ def wishlists():
 @app.route('/wishlists/<int:wishlist_id>', methods=['GET'])
 def read_wishlist(wishlist_id):
 	"""
-	Retrieve a single Wishlist
-	This endpoint will return a Wishlist based on it's ID
-	---
-	tags:
-	  - Wishlists
-	produces:
-	  - application/json
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of wishlist to retrieve
-		type: integer
-		required: true
-	responses:
-	  200:
-		description: Wishlist retrieved
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item      
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  404:
-		description: Wishlist not found
-	"""
+    Retrieve a single Wishlist
+    This endpoint will return a Wishlist based on it's ID
+    ---
+    tags:
+      - Wishlists
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of wishlist to retrieve
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Wishlist retrieved
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      404:
+        description: Wishlist not found
+    """
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		return make_response(jsonify(wl.serialize_wishlist()), status.HTTP_200_OK)
@@ -312,37 +313,37 @@ def read_wishlist(wishlist_id):
 @app.route('/wishlists/<int:wishlist_id>/items', methods=['GET'])
 def item(wishlist_id):
 	"""
-	Retrieve a list of items in the wishlist
-	This endpoint will return all items
-	---
-	tags:
-	  - Wishlist Items
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of the wishlist from which items have to be retrieved
-		required: true
-		type: integer
-	responses:
-	  200:
-		description: Wishlist items belonging to the wishlist ID
-		schema:
-			id: Wishlist
-			properties:
-				wishlist_item_id:
-					type: object
-					properties:
-						item_id:
-							type: string
-							description: ID of the item
-						item_description:
-							type: string
-							description: Description of the item	
-						
-			  
-	  404:
-		description: Wishlist not found            
-	"""
+    Retrieve a list of items in the wishlist
+    This endpoint will return all items
+    ---
+    tags:
+      - Wishlist Items
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of the wishlist from which items have to be retrieved
+        required: true
+        type: integer
+    responses:
+      200:
+        description: Wishlist items belonging to the wishlist ID
+        schema:
+        	id: Wishlist
+        	properties:
+			  	wishlist_item_id:
+			  		type: object
+			  		properties:
+			  			item_id:
+			  				type: string
+			  				description: ID of the item
+			  			item_description:
+			  				type: string
+			  				description: Description of the item
+
+
+      404:
+        description: Wishlist not found
+    """
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		items = wl.all_items()
@@ -354,39 +355,39 @@ def item(wishlist_id):
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['GET'])
 def read_wishlist_item(wishlist_id, item_id):
 	"""
-	Retrieve a single Wishlist item
-	This endpoint will return a Wishlist item based on it's ID
-	---
-	tags:
-	  - Wishlist Items
-	produces:
-	  - application/json
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of wishlist to retrieve from
-		type: integer
-		required: true
-	  - name: item_id
-		in: path
-		description: ID of item to be retrieved
-		type: string
-		required: true 
-	responses:
-	  200:
-		description: Wishlist items matching with the query
-		schema:
-		  id: Wishlist
-		  properties:
-			id:
-			  type: string
-			  description: ID of the item matching
-			description:
-			  type: string
-			  description: Description of the item
-	  404:
-		description: Wishlist not found
-	"""
+    Retrieve a single Wishlist item
+    This endpoint will return a Wishlist item based on it's ID
+    ---
+    tags:
+      - Wishlist Items
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of wishlist to retrieve from
+        type: integer
+        required: true
+      - name: item_id
+      	in: path
+      	description: ID of item to be retrieved
+      	type: string
+      	required: true
+    responses:
+      200:
+        description: Wishlist items matching with the query
+        schema:
+          id: Wishlist
+          properties:
+            id:
+              type: string
+              description: ID of the item matching
+            description:
+              type: string
+              description: Description of the item
+      404:
+        description: Wishlist not found
+    """
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		item = wl.find_item(item_id)
@@ -400,75 +401,75 @@ def read_wishlist_item(wishlist_id, item_id):
 @app.route('/wishlists/<int:id>', methods=['PUT'])
 def update_wishlist(id):
 	"""
-	Update a Wishlist
-	This endpoint will update a Wishlist based on the body that is put
-	---
-	tags:
-	  - Wishlists
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - name: id
-		in: path
-		description: ID of wishlist to update
-		type: integer
-		required: true
-	  - in: body
-		name: body
-		schema:
-		  id: data
-		  required:
-			- name
-			- user_id
-		  properties:
-			name:
-			  type: string
-			  description: New name for the Wishlist
-			user_id:
-			  type: string
-			  description: User ID of the user owning the wishlist
-	responses:
-	  200:
-		description: Wishlist updated
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item      
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  404:
-		description: Wishlist not found
-	  400:
-		description: Bad Request (the posted data was not valid)
-	"""
+    Update a Wishlist
+    This endpoint will update a Wishlist based on the body that is put
+    ---
+    tags:
+      - Wishlists
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of wishlist to update
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          id: data
+          required:
+            - name
+            - user_id
+          properties:
+            name:
+              type: string
+              description: New name for the Wishlist
+            user_id:
+              type: string
+              description: User ID of the user owning the wishlist
+    responses:
+      200:
+        description: Wishlist updated
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      404:
+      	description: Wishlist not found
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
 	data = request.get_json()
 	if is_valid(data, 'wishlist'):
 		try:
@@ -487,76 +488,77 @@ def update_wishlist(id):
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
 	"""
-	Update a Wishlist Item
-	This endpoint will update a Wishlist Item based the body that is posted
-	---
-	tags:
-	  - Wishlist Items
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of wishlist to which the item belongs
-		type: integer
-		required: true
-	  - name: item_id
-		in: path
-		description: ID of Item to be updated
-		type: String
-		required: true  
-	  - in: body
-		name: body
-		schema:
-		  id: data
-		  required:
-			- description
-		  properties:
-			description:
-			  type: string
-			  description: Updated description of the item
-	responses:
-	  200:
-		description: Wishlist item updated
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item      
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  404:
-		description: Wishlist/Item not found.
-	  400:
-		description: Bad Request (the posted data was not valid)
-	"""
+
+    Update a Wishlist Item
+    This endpoint will update a Wishlist Item based the body that is posted
+    ---
+    tags:
+      - Wishlist Items
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of wishlist to which the item belongs
+        type: integer
+        required: true
+      - name: item_id
+      	in: path
+      	description: ID of Item to be updated
+      	type: String
+      	required: true
+      - in: body
+        name: body
+        schema:
+          id: data
+          required:
+            - description
+          properties:
+            description:
+              type: string
+              description: Updated description of the item
+    responses:
+      200:
+        description: Wishlist item updated
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      404:
+      	description: Wishlist/Item not found.
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
 	try:
 		data=request.get_json()
 		data['id'] = item_id
@@ -585,25 +587,25 @@ def update_wishlist_item(wishlist_id, item_id):
 def remove_wishlist_item(wishlist_id, item_id):
 	"""
 	Delete a Wishlist item
-	This endpoint will delete an item based on the id specified in the path
-	---
-	tags:
-	  - Wishlist Items
-	description: Deletes a Wishlist Item from the database
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of the wishlist
-		type: string
-		required: true
-	  - name: item_id
-		in: path
-		description: ID of the item to be deleted
-		type: string
-		required: true  
-	responses:
-	  204:
-		description: Item deleted
+    This endpoint will delete an item based on the id specified in the path
+    ---
+    tags:
+      - Wishlist Items
+    description: Deletes a Wishlist Item from the database
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of the wishlist
+        type: string
+        required: true
+      - name: item_id
+      	in: path
+      	description: ID of the item to be deleted
+      	type: string
+      	required: true
+    responses:
+      204:
+        description: Item deleted
 	"""
 	wl = Wishlist.find(wishlist_id)
 	if not wl:
@@ -620,60 +622,59 @@ def remove_wishlist_item(wishlist_id, item_id):
 @app.route('/wishlists/<int:wishlist_id>/items/clear', methods=['PUT'])
 def clear_wishlist(wishlist_id):
 	"""
-	Clears a Wishlist
-	This endpoint will clear a Wishlist based on the wishlist_id
-	---
-	tags:
-	  - Wishlists
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of the wishlist to be cleared
-		type: integer
-		required: true
-	responses:
-	  200:
-		description: Wishlist cleared
-		schema:
-		  id: Wishlist
-		  properties:
-			user_id:
-			  type: string
-			  description: Unique ID of the user(created by the user)
-			name:
-			  type: string
-			  description: Wishlist Name(created by the user)
-			created:
-			  type: string
-			  format: date-time
-			  description: The time at which the wishlist was created
-			deleted:
-			  type: boolean
-			  description: Flag to be set when a wishlist is deleted
-			items:
-			  type: object
-			  properties:
-				wishlist_item_id:
-				  type: object
-				  properties:
-					item_id:
-					  type: string
-					  description: Original ID of the item
-					item_description:
-					  type: string
-					  description: Description of the item      
-			  description: Dictionary to store objects in a wishlist
-			id:
-			  type: integer
-			  description: Unique ID of the wishlist assigned internally by the server
-	  404:
-		description: Wishlist not found
-	"""
-
+    Clears a Wishlist
+    This endpoint will clear a Wishlist based on the wishlist_id
+    ---
+    tags:
+      - Wishlists
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: wishlist_id
+      	in: path
+      	description: ID of the wishlist to be cleared
+      	type: integer
+      	required: true
+    responses:
+      200:
+        description: Wishlist cleared
+        schema:
+          id: Wishlist
+          properties:
+            user_id:
+              type: string
+              description: Unique ID of the user(created by the user)
+            name:
+              type: string
+              description: Wishlist Name(created by the user)
+            created:
+              type: string
+              format: date-time
+              description: The time at which the wishlist was created
+            deleted:
+              type: boolean
+              description: Flag to be set when a wishlist is deleted
+            items:
+              type: object
+              properties:
+                wishlist_item_id:
+                  type: object
+                  properties:
+                    item_id:
+                      type: string
+                      description: Original ID of the item
+                    item_description:
+                      type: string
+                      description: Description of the item
+              description: Dictionary to store objects in a wishlist
+            id:
+              type: integer
+              description: Unique ID of the wishlist assigned internally by the server
+      404:
+        description: Wishlist not found
+    """
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(None)
@@ -689,20 +690,20 @@ def clear_wishlist(wishlist_id):
 def delete_wishlist(wishlist_id):
 	"""
 	Delete a Wishlist
-	This endpoint will delete a Wishlist based on the id specified in the path
-	---
-	tags:
-	  - Wishlists
-	description: Deletes a Wishlist from the database
-	parameters:
-	  - name: wishlist_id
-		in: path
-		description: ID of the wishlist to delete
-		type: integer
-		required: true
-	responses:
-	  204:
-		description: Wishlist deleted
+    This endpoint will delete a Wishlist based on the id specified in the path
+    ---
+    tags:
+      - Wishlists
+    description: Deletes a Wishlist from the database
+    parameters:
+      - name: wishlist_id
+        in: path
+        description: ID of the wishlist to delete
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Wishlist deleted
 	"""
 
 
@@ -718,37 +719,37 @@ def delete_wishlist(wishlist_id):
 def search_wishlists():
 	"""
 	Search a Wishlist Item
-	This endpoint will return a Wishlist Item based on the query parameters
-	---
-	tags:
-	  - Wishlist Items
-	consumes:
-	  - application/json
-	produces:
-	  - application/json
-	parameters:
-	  - name: q
-		in: query
-		description: Query to be searched
-		type: string
-		required: true
-	  - name: user_id
-		in: query
-		description: User ID whose wishlists would be searched
-		type: String
-		required: true  
-	responses:
-	  200:
-		description: Wishlist items matching with the query
-		schema:
-		  id: Wishlist
-		  properties:
-			id:
-			  type: string
-			  description: ID of the item matching
-			description:
-			  type: string
-			  description: Description of the item
+    This endpoint will return a Wishlist Item based on the query parameters
+    ---
+    tags:
+      - Wishlist Items
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: q
+        in: query
+        description: Query to be searched
+        type: string
+        required: true
+      - name: user_id
+      	in: query
+      	description: User ID whose wishlists would be searched
+      	type: String
+      	required: true
+    responses:
+      200:
+        description: Wishlist items matching with the query
+        schema:
+          id: Wishlist
+          properties:
+            id:
+              type: string
+              description: ID of the item matching
+            description:
+              type: string
+              description: Description of the item
 	"""
 
 	data = {}
