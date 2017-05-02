@@ -488,6 +488,7 @@ def update_wishlist(id):
 @app.route('/wishlists/<int:wishlist_id>/items/<string:item_id>', methods=['PUT'])
 def update_wishlist_item(wishlist_id, item_id):
 	"""
+
     Update a Wishlist Item
     This endpoint will update a Wishlist Item based the body that is posted
     ---
@@ -674,7 +675,6 @@ def clear_wishlist(wishlist_id):
       404:
         description: Wishlist not found
     """
-
 	try:
 		wl = Wishlist.find_or_404(wishlist_id)
 		wl.remove_item(None)
@@ -792,11 +792,11 @@ def is_valid(data, type):
 ######################################################################
 # load sample data
 def data_load_wishlist(data):
-    Wishlist().deserialize_wishlist(data).save_wishlist()
+	Wishlist().deserialize_wishlist(data).save_wishlist()
 
 # empty the database
 def data_reset():
-    redis.flushall()
+	redis.flushall()
 
 def data_load_wishlist_items(data):
 	#data_to_be_sent = {"id":data['id'], "description":data['description']}
