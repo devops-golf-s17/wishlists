@@ -744,12 +744,19 @@ def search_wishlists():
         schema:
           id: Wishlist
           properties:
-            id:
-              type: string
-              description: ID of the item matching
-            description:
-              type: string
-              description: Description of the item
+            wishlist_item_id:
+                type: object
+                propertiest:
+                    item_id:
+                        type: string
+                        description: ID of the item matching
+                    item_description:
+                        type:
+                    item_description:
+                        type: string
+                        description: Description of the item
+      400:
+        description: userid is missing
 	"""
 
 	data = {}
