@@ -750,16 +750,18 @@ def search_wishlists():
                   id: Wishlist
                   properties:
                     Results from wishlist with ID 3:
-                      type: object
-                      properties:
-                        item_id:
-                          type: string
-                          example: a12
-                          description: ID of the item matching
-                        item_description:
-                          type: string
-                          example: Product (Red) iPhone 7 Plus 256 GB
-                          description: Description of the item
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          item_id:
+                            type: string
+                            example: a12
+                            description: ID of the item matching
+                          item_description:
+                            type: string
+                            example: Product (Red) iPhone 7 Plus 256 GB
+                            description: Description of the item
       400:
         description: userid is missing
 	"""
