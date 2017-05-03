@@ -732,35 +732,33 @@ def search_wishlists():
         in: query
         description: Query to be searched
         type: string
-        required: true
       - name: user_id
       	in: query
       	description: User ID whose wishlists would be searched
       	type: String
+        required: true
     responses:
       200:
         description: Wishlist items matching with the query
         schema:
           type: object
           properties:
-            Search results for keyword \"IPhone\" in wishlists user ID \"user3\":
+            Search results for keyword \"q\" in wishlists user ID \"user_id\":
               type: array
               items:
                 schema:
                   id: Wishlist
                   properties:
-                    Results from wishlist with ID 3:
+                    Results from wishlist with ID \"wishlist_id\":
                       type: array
                       items:
                         type: object
                         properties:
                           item_id:
                             type: string
-                            example: a12
                             description: ID of the item matching
                           item_description:
                             type: string
-                            example: Product (Red) iPhone 7 Plus 256 GB
                             description: Description of the item
       400:
         description: userid is missing
